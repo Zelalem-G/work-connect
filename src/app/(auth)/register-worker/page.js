@@ -9,6 +9,23 @@ import StepFour from "@/features/auth/worker-registration/StepOne";
 
 export default function RegisterWorkerPage() {
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+
+    password: "",
+    confirmPassword: "",
+
+    primarySkill: "",
+    experience: "",
+    city: "",
+
+    skills: [],
+
+    profilePicture: null,
+    about: "",
+  });
 
   function nextStep() {
     if (step < 4) {
@@ -47,11 +64,17 @@ export default function RegisterWorkerPage() {
         {/* Content */}
 
         <div className="min-h-[250px]">
-          {step === 1 && <StepOne />}
+          {step === 1 && (
+            <StepOne formData={formData} setFormData={setFormData} />
+          )}
 
-          {step === 2 && <StepTwo />}
+          {step === 2 && (
+            <StepTwo formData={formData} setFormData={setFormData} />
+          )}
 
-          {step === 3 && <StepThree />}
+          {step === 3 && (
+            <StepThree formData={formData} setFormData={setFormData} />
+          )}
 
           {step === 4 && <StepFour />}
         </div>

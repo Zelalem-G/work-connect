@@ -1,6 +1,22 @@
 "use client";
 
-export default function StepThree() {
+export default function StepThree({ formData, setFormData }) {
+  function handleAboutChange(e) {
+    setFormData({
+      ...formData,
+      about: e.target.value,
+    });
+  }
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+
+    setFormData({
+      ...formData,
+      profilePicture: file || null,
+    });
+  }
+
   return (
     <div>
       {/* Header */}
@@ -22,11 +38,14 @@ export default function StepThree() {
           <input
             type="file"
             accept="image/*"
+            onChange={handleFileChange}
             className="w-full rounded-lg border border-gray-300 p-3"
           />
 
           <p className="mt-2 text-sm text-gray-500">
-            Upload a professional profile photo.
+            {formData.profilePicture
+              ? `Selected: ${formData.profilePicture.name}`
+              : "Upload a professional profile photo."}
           </p>
         </div>
 
@@ -37,6 +56,8 @@ export default function StepThree() {
 
           <textarea
             rows={6}
+            value={formData.about}
+            onChange={handleAboutChange}
             placeholder="Tell customers about yourself, your experience, and the services you provide."
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 resize-none"
           />

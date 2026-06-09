@@ -1,4 +1,13 @@
-export default function StepOne() {
+export default function StepOne({ formData, setFormData }) {
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-semibold">Basic Information</h2>
@@ -13,6 +22,9 @@ export default function StepOne() {
 
           <input
             type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
             placeholder="Enter your full name"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -25,6 +37,9 @@ export default function StepOne() {
 
           <input
             type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             placeholder="Enter your email"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -35,6 +50,9 @@ export default function StepOne() {
 
           <input
             type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
             placeholder="Enter your phone number"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -45,6 +63,9 @@ export default function StepOne() {
 
           <input
             type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             placeholder="Create a password"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -57,6 +78,9 @@ export default function StepOne() {
 
           <input
             type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
             placeholder="Confirm your password"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -67,16 +91,21 @@ export default function StepOne() {
             Primary Skill
           </label>
 
-          <select className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500">
-            <option>Choose a skill</option>
-            <option>Plumber</option>
-            <option>Electrician</option>
-            <option>Carpenter</option>
-            <option>Painter</option>
-            <option>Mechanic</option>
-            <option>Cleaner</option>
-            <option>Welder</option>
-            <option>Other</option>
+          <select
+            name="primarySkill"
+            value={formData.primarySkill}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          >
+            <option value="">Choose a skill</option>
+            <option value="Plumber">Plumber</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Carpenter">Carpenter</option>
+            <option value="Painter">Painter</option>
+            <option value="Mechanic">Mechanic</option>
+            <option value="Cleaner">Cleaner</option>
+            <option value="Welder">Welder</option>
+            <option value="Other">Other</option>
           </select>
         </div>
 
@@ -85,13 +114,18 @@ export default function StepOne() {
             Years of Experience
           </label>
 
-          <select className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500">
-            <option>Select experience</option>
-            <option>Less than 1 year</option>
-            <option>1 - 2 years</option>
-            <option>3 - 5 years</option>
-            <option>5 - 10 years</option>
-            <option>10+ years</option>
+          <select
+            name="experience"
+            value={formData.experience}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          >
+            <option value="">Select experience</option>
+            <option value="Less than 1 year">Less than 1 year</option>
+            <option value="1 - 2 years">1 - 2 years</option>
+            <option value="3 - 5 years">3 - 5 years</option>
+            <option value="5 - 10 years">5 - 10 years</option>
+            <option value="10+ years">10+ years</option>
           </select>
         </div>
 
@@ -100,6 +134,9 @@ export default function StepOne() {
 
           <input
             type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
             placeholder="Enter your city"
             className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
