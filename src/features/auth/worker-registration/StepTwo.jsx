@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function StepTwo({ formData, setFormData }) {
+export default function StepTwo({ formData, setFormData, errors, setErrors }) {
   const [customSkill, setCustomSkill] = useState("");
 
   const availableSkills = [
@@ -16,38 +16,59 @@ export default function StepTwo({ formData, setFormData }) {
     "Appliance Repair",
   ];
 
-  function toggleSkill(skill) {
-    if (formData.skills.includes(skill)) {
-      setFormData({
-        ...formData,
-        skills: formData.skills.filter((item) => item !== skill),
-      });
-    } else {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, skill],
-      });
+  function clearSkillError() {
+    if (errors.skills) {
+      setErrors((prev) => ({
+        ...prev,
+        skills: "",
+      }));
     }
+  }
+
+  function toggleSkill(skill) {
+    setFormData((prev) => {
+      const exists = prev.skills.includes(skill);
+
+      return {
+        ...prev,
+        skills: exists
+          ? prev.skills.filter((item) => item !== skill)
+          : [...prev.skills, skill],
+      };
+    });
+
+    clearSkillError();
   }
 
   function addCustomSkill() {
     const value = customSkill.trim();
 
-    if (value && !formData.skills.includes(value)) {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, value],
-      });
+    if (!value) return;
 
-      setCustomSkill("");
+    if (!formData.skills.includes(value)) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, value],
+      }));
+
+      clearSkillError();
     }
+
+    setCustomSkill("");
   }
 
   function removeSkill(skill) {
-    setFormData({
-      ...formData,
-      skills: formData.skills.filter((item) => item !== skill),
-    });
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((item) => item !== skill),
+    }));
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addCustomSkill();
+    }
   }
 
   return (
@@ -58,7 +79,13 @@ export default function StepTwo({ formData, setFormData }) {
         Select the services you provide.
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Skill Cards */}
+
+      <div
+        className={`grid grid-cols-2 gap-3 rounded-lg p-2 ${
+          errors.skills ? "border border-red-500" : ""
+        }`}
+      >
         {availableSkills.map((skill) => (
           <button
             key={skill}
@@ -75,6 +102,12 @@ export default function StepTwo({ formData, setFormData }) {
         ))}
       </div>
 
+      {errors.skills && (
+        <p className="mt-2 text-sm text-red-500">{errors.skills}</p>
+      )}
+
+      {/* Custom Skill */}
+
       <div className="mt-8">
         <label className="mb-2 block text-sm font-medium">
           Additional Skill
@@ -85,6 +118,7 @@ export default function StepTwo({ formData, setFormData }) {
             type="text"
             value={customSkill}
             onChange={(e) => setCustomSkill(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Add a custom skill"
             className="flex-1 rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
@@ -98,6 +132,8 @@ export default function StepTwo({ formData, setFormData }) {
           </button>
         </div>
       </div>
+
+      {/* Selected Skills */}
 
       <div className="mt-8">
         <h3 className="font-semibold">Selected Skills</h3>

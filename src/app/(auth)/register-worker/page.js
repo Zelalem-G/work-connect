@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
 import StepOne from "@/features/auth/worker-registration/StepOne";
-import StepTwo from "@/features/auth/worker-registration/StepOne";
-import StepThree from "@/features/auth/worker-registration/StepOne";
-import StepFour from "@/features/auth/worker-registration/StepOne";
+import StepTwo from "@/features/auth/worker-registration/StepTwo";
+import StepThree from "@/features/auth/worker-registration/StepThree";
+import StepFour from "@/features/auth/worker-registration/StepFour";
+
+import { workerSchemas } from "@/validation/auth/workerRegistration";
+import { validateSchema } from "@/validation/helpers";
 
 export default function RegisterWorkerPage() {
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -27,16 +32,41 @@ export default function RegisterWorkerPage() {
     about: "",
   });
 
-  function nextStep() {
-    if (step < 4) {
-      setStep(step + 1);
+  async function nextStep() {
+    if (step === 4) return;
+
+    const schema = workerSchemas[step];
+
+    if (schema) {
+      const result = await validateSchema(schema, formData);
+
+      if (!result.isValid) {
+        setErrors(result.errors);
+        return;
+      }
     }
+
+    setErrors({});
+
+    setStep((prev) => {
+      if (prev < 4) {
+        return prev + 1;
+      }
+
+      return prev;
+    });
   }
 
   function prevStep() {
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    setErrors({});
+
+    setStep((prev) => {
+      if (prev > 1) {
+        return prev - 1;
+      }
+
+      return prev;
+    });
   }
 
   return (
@@ -61,19 +91,34 @@ export default function RegisterWorkerPage() {
           </div>
         </div>
 
-        {/* Content */}
+        {/* Form Content */}
 
-        <div className="min-h-[250px]">
+        <div className="min-h-[350px]">
           {step === 1 && (
-            <StepOne formData={formData} setFormData={setFormData} />
+            <StepOne
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              setErrors={setErrors}
+            />
           )}
 
           {step === 2 && (
-            <StepTwo formData={formData} setFormData={setFormData} />
+            <StepTwo
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              setErrors={setErrors}
+            />
           )}
 
           {step === 3 && (
-            <StepThree formData={formData} setFormData={setFormData} />
+            <StepThree
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              setErrors={setErrors}
+            />
           )}
 
           {step === 4 && <StepFour />}
@@ -84,6 +129,7 @@ export default function RegisterWorkerPage() {
         {step !== 4 && (
           <div className="mt-8 flex justify-between">
             <button
+              type="button"
               onClick={prevStep}
               disabled={step === 1}
               className="rounded-lg border px-5 py-2 disabled:opacity-50"
@@ -92,6 +138,7 @@ export default function RegisterWorkerPage() {
             </button>
 
             <button
+              type="button"
               onClick={nextStep}
               className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
             >
