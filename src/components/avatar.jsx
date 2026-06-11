@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function Avatar({ src, alt = "Avatar", size = "md", className }) {
@@ -10,17 +11,16 @@ export function Avatar({ src, alt = "Avatar", size = "md", className }) {
   return (
     <div
       className={cn(
-        "relative rounded-full overflow-hidden bg-gray-200 flex-shrink-0",
+        "relative overflow-hidden rounded-full bg-gray-200 flex-shrink-0",
         sizes[size],
         className,
       )}
     >
       {src ? (
-        <img src={src} alt={alt} className="w-full h-full object-cover" />
+        <Image src={src} alt={alt} fill className="object-cover" />
       ) : (
-        // Fallback placeholder if no image
         <svg
-          className="w-full h-full text-gray-400"
+          className="h-full w-full text-gray-400"
           fill="currentColor"
           viewBox="0 0 24 24"
         >

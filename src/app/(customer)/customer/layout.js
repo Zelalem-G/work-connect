@@ -3,21 +3,31 @@ import { Avatar } from "@/components/avatar";
 
 export default function CustomerLayout({ children }) {
   const customerLinks = [
-    { name: "Hire Talent", href: "/talent", active: false },
-    { name: "Dashboard", href: "/dashboard/customer", active: true },
-    { name: "Messages", href: "/messages", active: false },
+    {
+      name: "Workers",
+      href: "/customer/workers",
+    },
+    {
+      name: "Dashboard",
+      href: "/customer/dashboard",
+    },
+    {
+      name: "Profile",
+      href: "/customer/profile",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       <TopNav
         links={customerLinks}
+        searchPlaceholder="Search workers..."
         rightActions={
           <>
-            {/* Bell Icon */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+            {/* Notifications */}
+            <button className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
               <svg
-                className="w-5 h-5"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -30,29 +40,8 @@ export default function CustomerLayout({ children }) {
                 />
               </svg>
             </button>
-            {/* Settings Icon */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </button>
-            {/* Avatar */}
+
+            {/* Customer Avatar */}
             <Avatar
               src="/api/placeholder/150/150"
               alt="Customer Profile"
@@ -62,8 +51,7 @@ export default function CustomerLayout({ children }) {
         }
       />
 
-      {/* Main Content Wrapper - Matches the spacing in the screenshots */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>
     </div>
