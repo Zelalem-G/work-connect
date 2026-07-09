@@ -2,60 +2,54 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
+import { useAuthStore } from "@/store/authStore";
 import { customerRegistrationSchema } from "@/validation/auth/customerRegistration";
-import { validateSchema } from "@/validation/helpers";
 
 export default function RegisterCustomerPage() {
-  const [errors, setErrors] = useState({});
+  const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    city: "",
+  const registerCustomer = useAuthStore((state) => state.registerCustomer);
+
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  const [serverError, setServerError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(customerRegistrationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      city: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  function handleChange(e) {
-    const { name, value } = e.target;
+  async function onSubmit(data) {
+    setServerError("");
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    try {
+      await registerCustomer(data);
 
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+      router.push("/customer/dashboard");
+    } catch (error) {
+      setServerError(error.message);
     }
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    const result = await validateSchema(customerRegistrationSchema, formData);
-
-    if (!result.isValid) {
-      setErrors(result.errors);
-      return;
-    }
-
-    setErrors({});
-
-    console.log(formData);
-
-    // Backend integration later
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10 text-gray-800">
+    <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 text-gray-800">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        {/* Header */}
-
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">Create Customer Account</h1>
 
@@ -64,29 +58,50 @@ export default function RegisterCustomerPage() {
           </p>
         </div>
 
-        {/* Form */}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Full Name */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* First Name */}
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Full Name</label>
+            <label className="mb-2 block text-sm font-medium">First Name</label>
 
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="Enter your full name"
+              placeholder="Enter your first name"
+              {...register("firstName")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
-                errors.fullName
+                errors.firstName
                   ? "border-red-500"
                   : "border-gray-300 focus:border-blue-500"
               }`}
             />
 
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>
+            {errors.firstName && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.firstName.message}
+              </p>
+            )}
+          </div>
+
+          {/* Last Name */}
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">Last Name</label>
+
+            <input
+              type="text"
+              placeholder="Enter your last name"
+              {...register("lastName")}
+              className={`w-full rounded-lg border px-4 py-3 outline-none ${
+                errors.lastName
+                  ? "border-red-500"
+                  : "border-gray-300 focus:border-blue-500"
+              }`}
+            />
+
+            {errors.lastName && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
 
@@ -99,10 +114,8 @@ export default function RegisterCustomerPage() {
 
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
               placeholder="Enter your email"
+              {...register("email")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.email
                   ? "border-red-500"
@@ -111,7 +124,9 @@ export default function RegisterCustomerPage() {
             />
 
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -124,10 +139,8 @@ export default function RegisterCustomerPage() {
 
             <input
               type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
               placeholder="Enter your phone number"
+              {...register("phone")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.phone
                   ? "border-red-500"
@@ -136,7 +149,9 @@ export default function RegisterCustomerPage() {
             />
 
             {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.phone.message}
+              </p>
             )}
           </div>
 
@@ -147,10 +162,8 @@ export default function RegisterCustomerPage() {
 
             <input
               type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
               placeholder="Enter your city"
+              {...register("city")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.city
                   ? "border-red-500"
@@ -159,7 +172,7 @@ export default function RegisterCustomerPage() {
             />
 
             {errors.city && (
-              <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.city.message}</p>
             )}
           </div>
 
@@ -170,10 +183,8 @@ export default function RegisterCustomerPage() {
 
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
               placeholder="Create a password"
+              {...register("password")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.password
                   ? "border-red-500"
@@ -182,7 +193,9 @@ export default function RegisterCustomerPage() {
             />
 
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -195,10 +208,8 @@ export default function RegisterCustomerPage() {
 
             <input
               type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
               placeholder="Confirm your password"
+              {...register("confirmPassword")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.confirmPassword
                   ? "border-red-500"
@@ -208,20 +219,21 @@ export default function RegisterCustomerPage() {
 
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-500">
-                {errors.confirmPassword}
+                {errors.confirmPassword.message}
               </p>
             )}
           </div>
 
+          {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+            disabled={isLoading}
+            className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
           >
-            Create Account
+            {isLoading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
-
-        {/* Footer */}
 
         <div className="mt-6 text-center text-sm">
           <span className="text-gray-500">Already have an account?</span>{" "}

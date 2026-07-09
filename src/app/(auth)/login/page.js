@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">Welcome Back</h1>
 
-          <p className="mt-2 text-gray-800">
+          <p className="mt-2 text-gray-600">
             Sign in to your WorkConnect account.
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-800">Do not have an account?</span>{" "}
+          <span className="text-gray-600">Do not have an account?</span>{" "}
           <Link
             href="/register"
             className="font-semibold text-blue-600 hover:underline"
