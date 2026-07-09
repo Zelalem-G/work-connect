@@ -1,9 +1,9 @@
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
-import { ProjectLocationCard } from "./ProjectLocationCard";
-import { ProjectPhotosCard } from "./ProjectPhotosCard";
+import ProjectLocationCard from "./ProjectLocationCard";
+import ProjectPhotosCard from "./ProjectPhotosCard";
 
-export function RequestSidebar() {
+export default function RequestSidebar() {
   return (
     <div className="space-y-6">
       <ProjectLocationCard />

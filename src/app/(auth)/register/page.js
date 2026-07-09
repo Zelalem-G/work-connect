@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10 text-gray-800">
       <div className="w-full max-w-2xl rounded-xl bg-white p-8 shadow-lg">
         {/* Header */}
 

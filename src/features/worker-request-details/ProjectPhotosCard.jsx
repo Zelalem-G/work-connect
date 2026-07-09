@@ -7,7 +7,7 @@ const projectPhotos = [
   "/api/placeholder/600/600",
 ];
 
-export function ProjectPhotosCard() {
+export default function ProjectPhotosCard() {
   return (
     <Card>
       <div className="space-y-5">

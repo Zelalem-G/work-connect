@@ -1,3 +1,5 @@
+// "use client";
+
 import Link from "next/link";
 import { HeroSearch } from "@/components/hero-search";
 import { CategoryCard } from "@/components/category-card";
@@ -52,7 +54,7 @@ export default function WorkerBrowsingPage() {
   ];
 
   return (
-    <div className="space-y-12">
+    <div className="bg-[#f9f9f9] space-y-12">
       {/* 1. Immersive Hero / Central Search Wrapper */}
       <HeroSearch />
 

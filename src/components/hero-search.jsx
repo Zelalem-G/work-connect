@@ -2,7 +2,7 @@ import { Button } from "./button";
 
 export function HeroSearch() {
   return (
-    <div className="relative bg-[#1A362D] rounded-2xl overflow-hidden py-20 px-6 text-center shadow-xl my-4">
+    <div className="relative bg-[#274f42] rounded-2xl overflow-hidden py-20 px-6 text-center shadow-xl my-4">
       {/* Background tint overlay matching Figma asset style */}
       <div className="absolute inset-0 bg-black/40 mix-blend-multiply pointer-events-none" />
 

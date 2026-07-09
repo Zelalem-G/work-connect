@@ -49,7 +49,7 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {/* Header */}
 
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -111,16 +111,16 @@ export default function CustomerDashboard() {
 
         {/* Right Side */}
 
-        <div className="space-y-6 lg:col-span-4">
+        <div className="space-y-6 lg:col-span-4 ">
           {/* Trust Score */}
 
-          <Card className="relative overflow-hidden bg-[#1A362D] text-white">
+          <Card className="relative overflow-hidden bg-[#1A362D] text-gray-600">
             <h3 className="mb-4 text-lg font-medium">Trust Score</h3>
 
             <div className="mb-6 flex items-baseline gap-2">
               <span className="text-5xl font-extrabold">98</span>
 
-              <span className="text-lg text-emerald-100">/ 100</span>
+              <span className="text-lg text-emerald-200">/ 100</span>
             </div>
 
             <div className="mb-4">
@@ -131,7 +131,7 @@ export default function CustomerDashboard() {
               />
             </div>
 
-            <p className="text-sm leading-relaxed text-emerald-50">
+            <p className="text-sm leading-relaxed text-emerald-200">
               You are one of our most trusted customers with an excellent
               service history.
             </p>

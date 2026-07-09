@@ -2,77 +2,69 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+import { useAuthStore } from "@/store/authStore";
+import { loginSchema } from "@/validation/auth/login";
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
+  const router = useRouter();
+
+  const login = useAuthStore((state) => state.login);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  const [serverError, setServerError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
   });
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  async function onSubmit(data) {
+    setServerError("");
 
-  function handleChange(e) {
-    const { name, value, type, checked } = e.target;
+    try {
+      const user = await login(data.email, data.password);
 
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  }
-
-  function validate() {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required.";
+      if (user.role === "customer") {
+        router.push("/customer/dashboard");
+      } else {
+        router.push("/worker/dashboard");
+      }
+    } catch (error) {
+      setServerError(error.message);
     }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required.";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    if (!validate()) return;
-
-    setLoading(true);
-
-    console.log(formData);
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10  text-gray-800">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">Welcome Back</h1>
 
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-gray-800">
             Sign in to your WorkConnect account.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="mb-2 block text-sm font-medium">Email</label>
 
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
               placeholder="Enter your email"
+              {...register("email")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.email
                   ? "border-red-500"
@@ -81,7 +73,9 @@ export default function LoginPage() {
             />
 
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -90,10 +84,8 @@ export default function LoginPage() {
 
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
               placeholder="Enter your password"
+              {...register("password")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
                 errors.password
                   ? "border-red-500"
@@ -102,18 +94,15 @@ export default function LoginPage() {
             />
 
             {errors.password && (
-              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="remember"
-                checked={formData.remember}
-                onChange={handleChange}
-              />
+              <input type="checkbox" {...register("remember")} />
               Remember me
             </label>
 
@@ -125,16 +114,19 @@ export default function LoginPage() {
             </Link>
           </div>
 
+          {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+
           <button
-            disabled={loading}
+            type="submit"
+            disabled={isLoading}
             className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
           >
-            {loading ? "Signing In..." : "Login"}
+            {isLoading ? "Signing In..." : "Login"}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">Do not have an account?</span>{" "}
+          <span className="text-gray-800">Do not have an account?</span>{" "}
           <Link
             href="/register"
             className="font-semibold text-blue-600 hover:underline"

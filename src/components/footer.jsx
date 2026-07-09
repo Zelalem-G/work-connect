@@ -11,7 +11,7 @@ export function Footer() {
               WorkConnect
             </span>
             <p className="text-emerald-100/70 text-sm max-w-sm leading-relaxed">
-              The Digital Curator for Ethiopia's top professional talent. We
+              The Digital Curator for Ethiopias top professional talent. We
               bridge the gap between skill and opportunity.
             </p>
             <div className="flex gap-3 pt-2">

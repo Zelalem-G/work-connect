@@ -1,6 +1,6 @@
 import { Card } from "@/components/card";
 
-export function ProjectLocationCard() {
+export default function ProjectLocationCard() {
   return (
     <Card>
       <div className="space-y-5">

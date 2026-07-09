@@ -4,7 +4,7 @@ import { Badge } from "@/components/badge";
 
 export default function ReliabilityCard() {
   return (
-    <Card className="bg-[#1A362D] text-white relative overflow-hidden">
+    <Card className="bg-[#1A362D] text-gray-800 relative overflow-hidden">
       <div className="relative z-10">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Worker Reliability</h3>
@@ -16,7 +16,7 @@ export default function ReliabilityCard() {
           <div>
             <p className="text-5xl font-bold">98%</p>
 
-            <p className="mt-2 text-sm text-emerald-100">
+            <p className="mt-2 text-sm text-emerald-200">
               Customer Satisfaction
             </p>
           </div>
@@ -30,7 +30,7 @@ export default function ReliabilityCard() {
           />
         </div>
 
-        <p className="mt-5 text-sm leading-relaxed text-emerald-50">
+        <p className="mt-5 text-sm leading-relaxed text-emerald-200">
           You are among the highest-rated workers in your area. Continue
           responding quickly and completing jobs on time to maintain your Top
           Rated status.

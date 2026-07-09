@@ -1,5 +1,6 @@
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
+import AuthProvider from "@/providers/AuthProvider";
 
 export const metadata = {
   title: "WorkConnect",
@@ -10,7 +11,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
