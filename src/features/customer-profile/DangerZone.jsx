@@ -1,6 +1,26 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 import { Card } from "@/components/card";
+import { useAuthStore } from "@/store/authStore";
 
 export default function DangerZone() {
+  const router = useRouter();
+
+  const logout = useAuthStore((state) => state.logout);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  async function handleLogout() {
+    try {
+      await logout();
+
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }
+
   return (
     <Card>
       <div className="space-y-5">
@@ -18,8 +38,12 @@ export default function DangerZone() {
 
         {/* Logout */}
 
-        <button className="w-full rounded-xl border border-gray-200 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
-          Logout
+        <button
+          onClick={handleLogout}
+          disabled={isLoading}
+          className="w-full rounded-xl border border-gray-200 py-3 font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
+        >
+          {isLoading ? "Logging out..." : "Logout"}
         </button>
 
         {/* Delete */}

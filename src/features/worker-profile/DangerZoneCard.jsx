@@ -21,7 +21,7 @@ export function DangerZoneCard() {
             </p>
           </div>
 
-          <Button className="border border-red-600 bg-white text-red-600 hover:bg-red-50">
+          <Button className="border border-red-600 bg-red-600 text-red-600 hover:bg-red-400">
             Delete Account
           </Button>
         </div>

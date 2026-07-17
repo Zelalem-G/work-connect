@@ -49,7 +49,7 @@ export default function WorkerLayout({ children }) {
 
               <Avatar
                 src={user?.profileImage || "/api/placeholder/150/150"}
-                alt={`${user?.firstName || "Worker"} Profile`}
+                alt="Worker Profile"
                 size="md"
               />
             </>

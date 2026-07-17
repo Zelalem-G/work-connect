@@ -102,14 +102,19 @@ export const registerWorker = async (data) => {
     id: crypto.randomUUID(),
     role: "worker",
 
-    firstName: data.firstName,
-    lastName: data.lastName,
+    fullName: data.fullName,
 
     email: data.email,
     password: data.password,
 
     phone: data.phone,
     city: data.city,
+
+    primarySkill: data.primarySkill,
+    experience: data.experience,
+    skills: data.skills,
+    about: data.about,
+    profilePicture: data.profilePicture,
 
     profileImage: "",
 

@@ -1,7 +1,27 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 import { Card } from "@/components/card";
 import { Button } from "@/components/button";
+import { useAuthStore } from "@/store/authStore";
 
 export function SecurityCard() {
+  const router = useRouter();
+
+  const logout = useAuthStore((state) => state.logout);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  async function handleLogout() {
+    try {
+      await logout();
+
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }
+
   return (
     <Card className="p-6">
       <h3 className="text-xl font-bold text-[#1A362D]">Security</h3>
@@ -32,7 +52,13 @@ export function SecurityCard() {
             </p>
           </div>
 
-          <Button variant="secondary">Sign Out</Button>
+          <Button
+            variant="secondary"
+            onClick={handleLogout}
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing Out..." : "Sign Out"}
+          </Button>
         </div>
       </div>
     </Card>

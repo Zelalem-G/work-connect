@@ -1,18 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { useAuthStore } from "@/store/authStore";
 
 import StepOne from "@/features/auth/worker-registration/StepOne";
 import StepTwo from "@/features/auth/worker-registration/StepTwo";
 import StepThree from "@/features/auth/worker-registration/StepThree";
-import StepFour from "@/features/auth/worker-registration/StepFour";
 
 import { workerSchemas } from "@/validation/auth/workerRegistration";
 import { validateSchema } from "@/validation/helpers";
 
 export default function RegisterWorkerPage() {
+  const router = useRouter();
+
+  const registerWorker = useAuthStore((state) => state.registerWorker);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -33,8 +41,6 @@ export default function RegisterWorkerPage() {
   });
 
   async function nextStep() {
-    if (step === 4) return;
-
     const schema = workerSchemas[step];
 
     if (schema) {
@@ -47,26 +53,38 @@ export default function RegisterWorkerPage() {
     }
 
     setErrors({});
+    setServerError("");
 
-    setStep((prev) => {
-      if (prev < 4) {
-        return prev + 1;
+    if (step === 3) {
+      try {
+        await registerWorker(formData);
+
+        router.replace("/worker/dashboard");
+      } catch (error) {
+        if (error.message === "An account with this email already exists.") {
+          setStep(1);
+
+          setErrors({
+            email: error.message,
+          });
+
+          return;
+        }
+
+        setServerError(error.message);
       }
 
-      return prev;
-    });
+      return;
+    }
+
+    setStep((prev) => prev + 1);
   }
 
   function prevStep() {
     setErrors({});
+    setServerError("");
 
-    setStep((prev) => {
-      if (prev > 1) {
-        return prev - 1;
-      }
-
-      return prev;
-    });
+    setStep((prev) => Math.max(prev - 1, 1));
   }
 
   return (
@@ -77,10 +95,10 @@ export default function RegisterWorkerPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Worker Registration</h1>
 
-          <p className="mt-2 text-gray-500">Step {step} of 4</p>
+          <p className="mt-2 text-gray-500">Step {step} of 3</p>
 
           <div className="mt-4 flex gap-2">
-            {[1, 2, 3, 4].map((number) => (
+            {[1, 2, 3].map((number) => (
               <div
                 key={number}
                 className={`h-2 flex-1 rounded ${
@@ -91,7 +109,7 @@ export default function RegisterWorkerPage() {
           </div>
         </div>
 
-        {/* Form Content */}
+        {/* Form */}
 
         <div className="min-h-[350px]">
           {step === 1 && (
@@ -120,32 +138,37 @@ export default function RegisterWorkerPage() {
               setErrors={setErrors}
             />
           )}
-
-          {step === 4 && <StepFour />}
         </div>
+
+        {serverError && (
+          <p className="mt-4 text-sm text-red-500">{serverError}</p>
+        )}
 
         {/* Navigation */}
 
-        {step !== 4 && (
-          <div className="mt-8 flex justify-between">
-            <button
-              type="button"
-              onClick={prevStep}
-              disabled={step === 1}
-              className="rounded-lg border px-5 py-2 disabled:opacity-50"
-            >
-              Back
-            </button>
+        <div className="mt-8 flex justify-between">
+          <button
+            type="button"
+            onClick={prevStep}
+            disabled={step === 1 || isLoading}
+            className="rounded-lg border px-5 py-2 disabled:opacity-50"
+          >
+            Back
+          </button>
 
-            <button
-              type="button"
-              onClick={nextStep}
-              className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
-            >
-              {step === 3 ? "Finish" : "Next"}
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={nextStep}
+            disabled={isLoading}
+            className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {isLoading
+              ? "Creating Account..."
+              : step === 3
+                ? "Finish Registration"
+                : "Next"}
+          </button>
+        </div>
       </div>
     </main>
   );

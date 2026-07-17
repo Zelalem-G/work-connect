@@ -56,10 +56,17 @@ export const useAuthStore = create((set) => ({
   },
 
   registerWorker: async (formData) => {
+    console.log("AUTH STORE: registerWorker called");
+
     set({ isLoading: true });
 
     try {
+      console.log("AUTH STORE: calling authService.registerWorker");
+
       const user = await authService.registerWorker(formData);
+
+      console.log("AUTH STORE: authService returned");
+      console.log(user);
 
       set({
         user,
@@ -67,9 +74,14 @@ export const useAuthStore = create((set) => ({
         isLoading: false,
       });
 
+      console.log("AUTH STORE: state updated");
+
       return user;
     } catch (error) {
+      console.error("AUTH STORE ERROR:", error);
+
       set({ isLoading: false });
+
       throw error;
     }
   },

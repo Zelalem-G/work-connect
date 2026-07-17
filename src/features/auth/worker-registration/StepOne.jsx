@@ -7,16 +7,15 @@ export default function StepOne({ formData, setFormData, errors, setErrors }) {
       [name]: value,
     }));
 
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    // Clear the error for the field being edited
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   }
 
   return (
-    <div>
+    <form>
       <h2 className="text-2xl font-semibold">Basic Information</h2>
 
       <p className="mt-2 mb-6 text-gray-500">
@@ -231,6 +230,6 @@ export default function StepOne({ formData, setFormData, errors, setErrors }) {
           )}
         </div>
       </div>
-    </div>
+    </form>
   );
 }

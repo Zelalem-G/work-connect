@@ -1,14 +1,10 @@
 import * as yup from "yup";
 
-export const firstNameSchema = yup
+export const fullNameSchema = yup
   .string()
   .trim()
-  .required("First name is required.");
-
-export const lastNameSchema = yup
-  .string()
-  .trim()
-  .required("Last name is required.");
+  .required("Full name is required.")
+  .min(3, "Please enter your full name.");
 
 export const emailSchema = yup
   .string()

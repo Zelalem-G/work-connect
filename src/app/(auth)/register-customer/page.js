@@ -13,7 +13,6 @@ export default function RegisterCustomerPage() {
   const router = useRouter();
 
   const registerCustomer = useAuthStore((state) => state.registerCustomer);
-
   const isLoading = useAuthStore((state) => state.isLoading);
 
   const [serverError, setServerError] = useState("");
@@ -25,8 +24,7 @@ export default function RegisterCustomerPage() {
   } = useForm({
     resolver: yupResolver(customerRegistrationSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       phone: "",
       city: "",
@@ -59,48 +57,25 @@ export default function RegisterCustomerPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* First Name */}
+          {/* Full Name */}
 
           <div>
-            <label className="mb-2 block text-sm font-medium">First Name</label>
+            <label className="mb-2 block text-sm font-medium">Full Name</label>
 
             <input
               type="text"
-              placeholder="Enter your first name"
-              {...register("firstName")}
+              placeholder="Enter your full name"
+              {...register("fullName")}
               className={`w-full rounded-lg border px-4 py-3 outline-none ${
-                errors.firstName
+                errors.fullName
                   ? "border-red-500"
                   : "border-gray-300 focus:border-blue-500"
               }`}
             />
 
-            {errors.firstName && (
+            {errors.fullName && (
               <p className="mt-1 text-sm text-red-500">
-                {errors.firstName.message}
-              </p>
-            )}
-          </div>
-
-          {/* Last Name */}
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">Last Name</label>
-
-            <input
-              type="text"
-              placeholder="Enter your last name"
-              {...register("lastName")}
-              className={`w-full rounded-lg border px-4 py-3 outline-none ${
-                errors.lastName
-                  ? "border-red-500"
-                  : "border-gray-300 focus:border-blue-500"
-              }`}
-            />
-
-            {errors.lastName && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.lastName.message}
+                {errors.fullName.message}
               </p>
             )}
           </div>

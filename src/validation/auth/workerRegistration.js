@@ -1,8 +1,7 @@
 import * as yup from "yup";
 
 import {
-  firstNameSchema,
-  lastNameSchema,
+  fullNameSchema,
   emailSchema,
   phoneSchema,
   passwordSchema,
@@ -11,9 +10,7 @@ import {
 } from "./common";
 
 const stepOneSchema = yup.object({
-  firstName: firstNameSchema,
-
-  lastName: lastNameSchema,
+  fullName: fullNameSchema,
 
   email: emailSchema,
 
