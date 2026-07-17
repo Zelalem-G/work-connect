@@ -1,7 +1,7 @@
 // src/services/storage.service.js
 
 import { users } from "@/mock/data/users";
-import { categories } from "@/mock/data/categories";
+import { professions } from "@/mock/data/professions";
 import { workerProfiles } from "@/mock/data/workerProfiles";
 import { requests } from "@/mock/data/requests";
 import { portfolio } from "@/mock/data/portfolio";
@@ -11,7 +11,7 @@ const STORAGE_KEY = "workconnect-db";
 
 const INITIAL_DATABASE = {
   users,
-  categories,
+  professions,
   workerProfiles,
   requests,
   portfolio,
@@ -31,7 +31,7 @@ export function initializeDatabase() {
 }
 
 /**
- * Returns the entire mock database.
+ * Returns the entire database.
  */
 export function getDatabase() {
   initializeDatabase();
@@ -47,11 +47,10 @@ export function saveDatabase(database) {
 }
 
 /**
- * Returns a collection.
+ * Returns one collection.
  *
  * Example:
  * getCollection("users")
- * getCollection("requests")
  */
 export function getCollection(collectionName) {
   const database = getDatabase();
@@ -60,17 +59,82 @@ export function getCollection(collectionName) {
 }
 
 /**
- * Saves a single collection.
- *
- * Example:
- * saveCollection("users", updatedUsers)
+ * Replaces one collection.
  */
-export function saveCollection(collectionName, data) {
+export function saveCollection(collectionName, collection) {
   const database = getDatabase();
 
-  database[collectionName] = data;
+  database[collectionName] = collection;
 
   saveDatabase(database);
+}
+
+/**
+ * Finds the first item matching a predicate.
+ */
+export function findOne(collectionName, predicate) {
+  return getCollection(collectionName).find(predicate);
+}
+
+/**
+ * Returns every matching item.
+ */
+export function findMany(collectionName, predicate) {
+  return getCollection(collectionName).filter(predicate);
+}
+
+/**
+ * Inserts an item into a collection.
+ */
+export function insert(collectionName, item) {
+  const collection = getCollection(collectionName);
+
+  collection.push(item);
+
+  saveCollection(collectionName, collection);
+
+  return item;
+}
+
+/**
+ * Updates the first matching item.
+ */
+export function updateOne(collectionName, predicate, updates) {
+  const collection = getCollection(collectionName);
+
+  const index = collection.findIndex(predicate);
+
+  if (index === -1) {
+    return null;
+  }
+
+  collection[index] = {
+    ...collection[index],
+    ...updates,
+  };
+
+  saveCollection(collectionName, collection);
+
+  return collection[index];
+}
+
+/**
+ * Removes the first matching item.
+ */
+export function removeOne(collectionName, predicate) {
+  const collection = getCollection(collectionName);
+
+  const index = collection.findIndex(predicate);
+
+  if (index === -1) {
+    return false;
+  }
+
+  collection.splice(index, 1);
+
+  saveCollection(collectionName, collection);
+
+  return true;
 }
 
 /**

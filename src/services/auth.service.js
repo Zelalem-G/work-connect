@@ -1,9 +1,5 @@
 import { getDatabase, saveDatabase } from "@/mock/initialize";
-
-/**
- * Simulates network latency.
- */
-const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
+import { delay } from "@/lib/delay";
 
 const CURRENT_USER_KEY = "workconnect-current-user";
 
