@@ -6,18 +6,18 @@ export default function StepThree({
   errors,
   setErrors,
 }) {
-  function handleAboutChange(e) {
+  function handleBioChange(e) {
     const value = e.target.value;
 
     setFormData((prev) => ({
       ...prev,
-      about: value,
+      bio: value,
     }));
 
-    if (errors.about) {
+    if (errors.bio) {
       setErrors((prev) => ({
         ...prev,
-        about: "",
+        bio: "",
       }));
     }
   }
@@ -74,18 +74,20 @@ export default function StepThree({
           )}
         </div>
 
-        {/* About Me */}
+        {/* Bio */}
 
         <div>
-          <label className="mb-2 block text-sm font-medium">About Me</label>
+          <label className="mb-2 block text-sm font-medium">
+            Professional Bio
+          </label>
 
           <textarea
             rows={6}
-            value={formData.about}
-            onChange={handleAboutChange}
+            value={formData.bio}
+            onChange={handleBioChange}
             placeholder="Tell customers about yourself, your experience, and the services you provide."
-            className={`w-full rounded-lg border px-4 py-3 outline-none resize-none ${
-              errors.about
+            className={`w-full resize-none rounded-lg border px-4 py-3 outline-none ${
+              errors.bio
                 ? "border-red-500"
                 : "border-gray-300 focus:border-blue-500"
             }`}
@@ -93,13 +95,13 @@ export default function StepThree({
 
           <div className="mt-1 flex justify-between">
             <div>
-              {errors.about && (
-                <p className="text-sm text-red-500">{errors.about}</p>
+              {errors.bio && (
+                <p className="text-sm text-red-500">{errors.bio}</p>
               )}
             </div>
 
             <p className="text-sm text-gray-500">
-              {formData.about.length} characters
+              {formData.bio.length} characters
             </p>
           </div>
         </div>

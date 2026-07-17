@@ -37,7 +37,8 @@ export default function RegisterWorkerPage() {
     skills: [],
 
     profilePicture: null,
-    about: "",
+
+    bio: "",
   });
 
   async function nextStep() {
@@ -88,7 +89,7 @@ export default function RegisterWorkerPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10 text-gray-800">
+    <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 text-gray-800">
       <div className="w-full max-w-2xl rounded-xl bg-white p-8 shadow-lg">
         {/* Progress */}
 

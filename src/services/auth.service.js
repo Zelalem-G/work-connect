@@ -59,8 +59,7 @@ export const registerCustomer = async (data) => {
     id: crypto.randomUUID(),
     role: "customer",
 
-    firstName: data.firstName,
-    lastName: data.lastName,
+    fullName: data.fullName,
 
     email: data.email,
     password: data.password,
@@ -98,6 +97,7 @@ export const registerWorker = async (data) => {
     throw new Error("An account with this email already exists.");
   }
 
+  // Account information
   const newUser = {
     id: crypto.randomUUID(),
     role: "worker",
@@ -110,18 +110,42 @@ export const registerWorker = async (data) => {
     phone: data.phone,
     city: data.city,
 
-    primarySkill: data.primarySkill,
-    experience: data.experience,
-    skills: data.skills,
-    about: data.about,
-    profilePicture: data.profilePicture,
-
     profileImage: "",
 
     createdAt: new Date().toISOString(),
   };
 
+  // Professional profile
+  const workerProfile = {
+    userId: newUser.id,
+
+    primarySkill: data.primarySkill,
+
+    skills: data.skills ?? [],
+
+    bio: data.about,
+
+    experience: Number(data.experience),
+
+    availability: "available",
+
+    verified: false,
+
+    completedJobs: 0,
+
+    rating: 0,
+
+    totalReviews: 0,
+
+    serviceAreas: [data.city],
+
+    joinedProfession: new Date().toISOString().split("T")[0],
+
+    responseRate: 100,
+  };
+
   database.users.push(newUser);
+  database.workerProfiles.push(workerProfile);
 
   saveDatabase(database);
 

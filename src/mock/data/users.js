@@ -11,8 +11,7 @@ export const users = [
     id: "cust-1",
     role: "customer",
 
-    firstName: "Abel",
-    lastName: "Bekele",
+    fullName: "Abel Bekele",
 
     email: "abel@example.com",
     password: "password123",
@@ -27,30 +26,10 @@ export const users = [
   },
 
   {
-    id: "cust-2",
-    role: "customer",
-
-    firstName: "Hana",
-    lastName: "Tesfaye",
-
-    email: "hana@example.com",
-    password: "password123",
-
-    phone: "+251922222222",
-    city: "Bahir Dar",
-
-    profileImage:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-
-    createdAt: "2026-02-03T14:20:00Z",
-  },
-
-  {
     id: "worker-1",
     role: "worker",
 
-    firstName: "Samuel",
-    lastName: "Kebede",
+    fullName: "Samuel Kebede",
 
     email: "samuel@example.com",
     password: "password123",

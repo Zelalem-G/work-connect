@@ -35,7 +35,7 @@ const stepTwoSchema = yup.object({
 });
 
 const stepThreeSchema = yup.object({
-  about: yup
+  bio: yup
     .string()
     .trim()
     .required("Tell customers about yourself.")
