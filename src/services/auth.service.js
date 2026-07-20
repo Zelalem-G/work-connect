@@ -1,12 +1,40 @@
-import { getDatabase, saveDatabase } from "@/mock/initialize";
 import { delay } from "@/lib/delay";
+import { getDatabase, saveDatabase } from "@/mock/initialize";
 
 const CURRENT_USER_KEY = "workconnect-current-user";
 
 /**
+ * Stores the current authenticated user.
+ */
+export function setCurrentUser(user) {
+  if (!user) {
+    localStorage.removeItem(CURRENT_USER_KEY);
+    return;
+  }
+
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+}
+
+/**
+ * Returns the currently authenticated user.
+ */
+export function getCurrentUser() {
+  const user = localStorage.getItem(CURRENT_USER_KEY);
+
+  return user ? JSON.parse(user) : null;
+}
+
+/**
+ * Returns whether a user is authenticated.
+ */
+export function isAuthenticated() {
+  return !!getCurrentUser();
+}
+
+/**
  * Logs a user in.
  */
-export const login = async (email, password) => {
+export async function login(email, password) {
   await delay();
 
   const database = getDatabase();
@@ -21,24 +49,24 @@ export const login = async (email, password) => {
     throw new Error("Invalid email or password.");
   }
 
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  setCurrentUser(user);
 
   return user;
-};
+}
 
 /**
  * Logs the current user out.
  */
-export const logout = async () => {
+export async function logout() {
   await delay();
 
-  localStorage.removeItem(CURRENT_USER_KEY);
-};
+  setCurrentUser(null);
+}
 
 /**
  * Registers a new customer.
  */
-export const registerCustomer = async (data) => {
+export async function registerCustomer(data) {
   await delay();
 
   const database = getDatabase();
@@ -72,15 +100,15 @@ export const registerCustomer = async (data) => {
 
   saveDatabase(database);
 
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+  setCurrentUser(newUser);
 
   return newUser;
-};
+}
 
 /**
  * Registers a new worker.
  */
-export const registerWorker = async (data) => {
+export async function registerWorker(data) {
   await delay();
 
   const database = getDatabase();
@@ -145,15 +173,15 @@ export const registerWorker = async (data) => {
 
   saveDatabase(database);
 
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+  setCurrentUser(newUser);
 
   return newUser;
-};
+}
 
 /**
  * Simulates a forgot password request.
  */
-export const forgotPassword = async (email) => {
+export async function forgotPassword(email) {
   await delay();
 
   const database = getDatabase();
@@ -170,20 +198,4 @@ export const forgotPassword = async (email) => {
     success: true,
     message: "Password reset email sent successfully.",
   };
-};
-
-/**
- * Returns the currently logged-in user.
- */
-export const getCurrentUser = () => {
-  const user = localStorage.getItem(CURRENT_USER_KEY);
-
-  return user ? JSON.parse(user) : null;
-};
-
-/**
- * Returns whether a user is authenticated.
- */
-export const isAuthenticated = () => {
-  return !!getCurrentUser();
-};
+}
