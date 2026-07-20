@@ -119,6 +119,30 @@ export function updateOne(collectionName, predicate, updates) {
 }
 
 /**
+ * Deletes a single item from a collection.
+ *
+ * Example:
+ * deleteOne("requests", request => request.id === requestId)
+ */
+export function deleteOne(collectionName, predicate) {
+  const database = getDatabase();
+
+  const collection = database[collectionName];
+
+  const index = collection.findIndex(predicate);
+
+  if (index === -1) {
+    return false;
+  }
+
+  const [deletedItem] = collection.splice(index, 1);
+
+  saveDatabase(database);
+
+  return deletedItem;
+}
+
+/**
  * Removes the first matching item.
  */
 export function removeOne(collectionName, predicate) {
