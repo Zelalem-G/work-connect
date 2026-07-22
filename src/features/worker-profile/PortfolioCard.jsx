@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card } from "@/components/card";
 import { Button } from "@/components/button";
 
-export function PortfolioCard() {
+export function PortfolioCard({ portfolioCount = 0 }) {
   return (
     <Card className="p-6">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -18,16 +18,16 @@ export function PortfolioCard() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <span className="rounded-full bg-[#E8F5F1] px-3 py-1 text-sm font-medium text-[#1A362D]">
-              0 Photos
+              {portfolioCount} Photo{portfolioCount === 1 ? "" : "s"}
             </span>
 
             <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
-              Not set up yet
+              {portfolioCount > 0 ? "Ready to share" : "Not set up yet"}
             </span>
           </div>
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Link href="/worker/portfolio">
             <Button variant="primary">Manage Portfolio</Button>
           </Link>

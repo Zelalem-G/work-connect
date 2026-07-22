@@ -9,6 +9,7 @@ import {
   updateOne,
   deleteOne,
 } from "./storage.service";
+import { getWorkerById } from "./worker.service";
 
 /**
  * Returns every request.
@@ -51,23 +52,19 @@ export async function createRequest(data) {
     workerId: data.workerId,
 
     title: data.title,
-
     description: data.description,
-
     location: data.location,
 
-    preferredDate: data.preferredDate,
-
-    preferredTime: data.preferredTime,
+    preferredDate: data.preferredDate ?? data.date?.split("T")[0] ?? null,
+    preferredTime: data.preferredTime ?? data.date?.split("T")[1] ?? null,
 
     budget: data.budget || null,
 
-    photos: data.photos ?? [],
+    photos: data.photos ?? data.images ?? [],
+    images: data.images ?? data.photos ?? [],
 
     status: "pending",
-
     createdAt: new Date().toISOString(),
-
     updatedAt: new Date().toISOString(),
   };
 
@@ -96,6 +93,35 @@ export async function deleteRequest(requestId) {
   await delay();
 
   return deleteOne("requests", (request) => request.id === requestId);
+}
+
+/**
+ * Returns a request together with its related worker.
+ */
+export async function getCustomerRequestDetails(requestId) {
+  await delay();
+
+  const customer = getCurrentUser();
+
+  if (!customer || customer.role !== "customer") {
+    return null;
+  }
+
+  const request = findOne(
+    "requests",
+    (request) => request.id === requestId && request.customerId === customer.id,
+  );
+
+  if (!request) {
+    return null;
+  }
+
+  const worker = await getWorkerById(request.workerId);
+
+  return {
+    request,
+    worker,
+  };
 }
 
 /**

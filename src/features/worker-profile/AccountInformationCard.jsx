@@ -1,7 +1,7 @@
 import { Card } from "@/components/card";
 import { Button } from "@/components/button";
 
-export function AccountInformationCard() {
+export function AccountInformationCard({ worker }) {
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -25,8 +25,9 @@ export function AccountInformationCard() {
 
           <input
             type="text"
-            defaultValue="Abebe Kebede"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+            value={worker.fullName}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
           />
         </div>
 
@@ -37,8 +38,9 @@ export function AccountInformationCard() {
 
           <input
             type="email"
-            defaultValue="abebe@example.com"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+            value={worker.email}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
           />
         </div>
 
@@ -49,8 +51,9 @@ export function AccountInformationCard() {
 
           <input
             type="tel"
-            defaultValue="+251912345678"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+            value={worker.phone}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
           />
         </div>
 

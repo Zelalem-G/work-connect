@@ -1,11 +1,28 @@
+import { useState } from "react";
+
 import { Card } from "@/components/card";
 import { Button } from "@/components/button";
 
-export function UploadPortfolioCard() {
+export function UploadPortfolioCard({ onUpload, submitting = false }) {
+  const [imageUrl, setImageUrl] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    if (!imageUrl.trim()) {
+      return;
+    }
+
+    onUpload?.(imageUrl.trim());
+    setImageUrl("");
+  }
+
   return (
     <Card className="border-2 border-dashed border-gray-300 p-8">
-      <div className="flex flex-col items-center text-center">
-        {/* Icon */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center text-center"
+      >
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#E8F5F1]">
           <svg
             className="h-8 w-8 text-[#1A362D]"
@@ -31,12 +48,22 @@ export function UploadPortfolioCard() {
           the quality of your services.
         </p>
 
-        <Button className="mt-6">Upload Photos</Button>
+        <input
+          type="url"
+          value={imageUrl}
+          onChange={(event) => setImageUrl(event.target.value)}
+          placeholder="https://example.com/project.jpg"
+          className="mt-6 w-full max-w-md rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-[#1A362D]"
+        />
+
+        <Button type="submit" className="mt-6" disabled={submitting}>
+          {submitting ? "Uploading..." : "Upload Photos"}
+        </Button>
 
         <p className="mt-3 text-sm text-gray-400">
-          JPG, PNG or WEBP • Multiple images supported
+          Paste an image URL • Multiple items supported
         </p>
-      </div>
+      </form>
     </Card>
   );
 }

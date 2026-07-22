@@ -52,7 +52,9 @@ export function WorkerRequestCard({
         </div>
       </div>
 
-      <p className="text-sm text-gray-600 leading-relaxed">"{description}"</p>
+      <p className="text-sm text-gray-600 leading-relaxed">
+        &quot;{description}&quot;
+      </p>
 
       {/* Actions */}
       <div className="flex gap-3 mt-2">

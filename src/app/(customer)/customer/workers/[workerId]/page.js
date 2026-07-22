@@ -1,109 +1,170 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+
 import WorkerProfileHeader from "@/features/workers/WorkerProfileHeader";
 import WorkerAbout from "@/features/workers/WorkerAbout";
 import WorkerReviews from "@/features/workers/WorkerReviews";
-
 import WorkerBookingCard from "@/features/workers/WorkerBookingCard";
 import WorkerPortfolio from "@/features/workers/WorkerPortfolio";
 import WorkerServiceArea from "@/features/workers/WorkerServiceArea";
+import { Card } from "@/components/card";
+import { getWorkerProfileData } from "@/services/worker.service";
+import { getWorkerReviews } from "@/services/review.service";
+
+function toReviewViewModel(review) {
+  const date = review.createdAt
+    ? new Date(review.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "Recently reviewed";
+
+  return {
+    id: review.id,
+    initials: review.customerId?.slice(0, 2).toUpperCase() || "CU",
+    name: review.customerId || "Verified customer",
+    date,
+    project: "Service completed",
+    rating: review.rating || 0,
+    comment: review.comment || "The customer left a short review.",
+  };
+}
 
 export default function WorkerProfilePage() {
-  // Dummy data for now
-  const worker = {
-    id: 1,
+  const params = useParams();
+  const workerId = params?.workerId;
+  const [profile, setProfile] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    name: "Abebe Kebede",
+  useEffect(() => {
+    let mounted = true;
 
-    title: "Certified Plumber",
+    async function loadWorkerProfile() {
+      if (!workerId) {
+        return;
+      }
 
-    image: "/api/placeholder/300/300",
+      try {
+        setLoading(true);
+        setError("");
 
-    verified: true,
+        const [workerProfile, workerReviews] = await Promise.all([
+          getWorkerProfileData(workerId),
+          getWorkerReviews(workerId),
+        ]);
 
-    available: true,
+        if (mounted) {
+          setProfile(workerProfile);
+          setReviews(workerReviews);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(
+            err.message || "Unable to load this worker profile right now.",
+          );
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
 
-    rating: 4.9,
+    loadWorkerProfile();
 
-    reviewCount: 120,
+    return () => {
+      mounted = false;
+    };
+  }, [workerId]);
 
-    location: "Addis Ababa, ET",
+  const worker = useMemo(() => {
+    if (!profile?.worker) {
+      return null;
+    }
 
-    price: "100 ETB /hr",
+    const ratingData = profile.rating || {
+      rating: profile.worker.rating || 0,
+      totalReviews: profile.worker.totalReviews || reviews.length,
+    };
 
-    yearsExperience: "5+",
-
-    completedJobs: 42,
-
-    successRate: "98%",
-
-    activeJobs: 15,
-
-    responseTime: "Usually responds within 2 hours",
-
-    availability: "Available Mon - Fri, 8:00 - 17:00",
-
-    serviceArea: "Addis Ababa",
-
-    workType: "On-Site",
-
-    skills: ["Plumbing", "Pipe Installation", "Maintenance"],
-
-    about: [
-      "With over 5 years of hands-on experience as a handyman specializing in plumbing, I take pride in handling a wide range of repair and maintenance tasks for both homes and small businesses. From fixing leaks and unclogging drains to installing fixtures and maintaining water systems, I focus on practical, reliable solutions that get the job done right.",
-
-      "I've worked on over 40 projects, always paying close attention to detail and making sure everything functions smoothly and safely. My goal is to provide honest, dependable service and help my clients feel confident that their plumbing issues are handled with care.",
-    ],
-
-    portfolio: [
-      "/api/placeholder/400/400",
-      "/api/placeholder/400/400",
-      "/api/placeholder/400/400",
-      "/api/placeholder/400/400",
-    ],
-
-    reviews: [
-      {
-        id: 1,
-        initials: "MH",
-        name: "Martha Haile",
-        date: "Last Week",
-        project: "Residential Project",
-        rating: 5,
-        comment: "Great plumber!",
-      },
-
-      {
-        id: 2,
-        initials: "KA",
-        name: "Kebede Abebe",
-        date: "2 Months Ago",
-        project: "Commercial Consultation",
-        rating: 5,
-        comment: "Highly professional.",
-      },
-    ],
-  };
+    return {
+      id: profile.worker.id,
+      name: profile.worker.fullName,
+      title: profile.worker.primarySkill || "Skilled professional",
+      image: profile.worker.profileImage || "/api/placeholder/300/300",
+      verified: profile.worker.verified,
+      available: profile.worker.availability === "available",
+      rating: ratingData.rating || 0,
+      reviewCount: ratingData.totalReviews || reviews.length,
+      location: `${profile.worker.city || "Addis Ababa"}, ET`,
+      price: "100 ETB /hr",
+      yearsExperience: `${profile.worker.experience || 0}+`,
+      completedJobs: profile.worker.completedJobs || 0,
+      successRate: `${profile.worker.responseRate || 0}%`,
+      activeJobs: 0,
+      responseTime: "Usually responds within 2 hours",
+      availability:
+        profile.worker.availability === "available"
+          ? "Available now"
+          : "Busy right now",
+      serviceArea: (profile.worker.serviceAreas || [
+        profile.worker.city || "Addis Ababa",
+      ])[0],
+      workType: "On-Site",
+      skills: profile.worker.skills || [],
+      about: [
+        profile.worker.bio ||
+          "This professional is ready to help with your next project.",
+      ],
+      portfolio: (profile.portfolio || []).map((item) => item.image),
+      reviews: (reviews || []).map(toReviewViewModel),
+    };
+  }, [profile, reviews]);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-      {/* Left Side */}
+      {loading ? (
+        <div className="lg:col-span-12">
+          <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+            Loading worker profile...
+          </Card>
+        </div>
+      ) : error ? (
+        <div className="lg:col-span-12">
+          <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+            {error}
+          </Card>
+        </div>
+      ) : !worker ? (
+        <div className="lg:col-span-12">
+          <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+            No worker profile found for this request.
+          </Card>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-8 lg:col-span-8">
+            <WorkerProfileHeader worker={worker} />
 
-      <div className="space-y-8 lg:col-span-8">
-        <WorkerProfileHeader worker={worker} />
+            <WorkerAbout worker={worker} />
 
-        <WorkerAbout worker={worker} />
+            <WorkerReviews reviews={worker.reviews} />
+          </div>
 
-        <WorkerReviews reviews={worker.reviews} />
-      </div>
+          <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
+            <WorkerBookingCard worker={worker} />
 
-      {/* Right Side */}
+            <WorkerPortfolio portfolio={worker.portfolio} />
 
-      <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
-        <WorkerBookingCard worker={worker} />
-
-        <WorkerPortfolio portfolio={worker.portfolio} />
-
-        <WorkerServiceArea worker={worker} />
-      </aside>
+            <WorkerServiceArea worker={worker} />
+          </aside>
+        </>
+      )}
     </div>
   );
 }

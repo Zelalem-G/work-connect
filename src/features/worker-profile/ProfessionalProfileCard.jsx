@@ -1,7 +1,7 @@
 import { Card } from "@/components/card";
 import { Button } from "@/components/button";
 
-export function ProfessionalProfileCard() {
+export function ProfessionalProfileCard({ worker }) {
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -24,16 +24,12 @@ export function ProfessionalProfileCard() {
             Primary Skill
           </label>
 
-          <select className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white">
-            <option>Electrician</option>
-            <option>Plumber</option>
-            <option>Carpenter</option>
-            <option>Painter</option>
-            <option>Mechanic</option>
-            <option>Cleaner</option>
-            <option>Welder</option>
-            <option>Other</option>
-          </select>
+          <input
+            type="text"
+            value={worker.primarySkill}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
+          />
         </div>
 
         <div>
@@ -41,13 +37,12 @@ export function ProfessionalProfileCard() {
             Years of Experience
           </label>
 
-          <select className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white">
-            <option>5 - 10 years</option>
-            <option>Less than 1 year</option>
-            <option>1 - 2 years</option>
-            <option>3 - 5 years</option>
-            <option>10+ years</option>
-          </select>
+          <input
+            type="text"
+            value={`${worker.experience} years`}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
+          />
         </div>
 
         <div>
@@ -57,8 +52,9 @@ export function ProfessionalProfileCard() {
 
           <input
             type="text"
-            defaultValue="Addis Ababa"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+            value={worker.city}
+            readOnly
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
           />
         </div>
 
@@ -68,13 +64,7 @@ export function ProfessionalProfileCard() {
           </label>
 
           <div className="flex flex-wrap gap-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            {[
-              "Electrical",
-              "Maintenance",
-              "Solar",
-              "Installation",
-              "Repairs",
-            ].map((skill) => (
+            {(worker.skills || []).map((skill) => (
               <span
                 key={skill}
                 className="rounded-full bg-[#E8F5F1] px-3 py-1 text-sm font-medium text-[#1A362D]"
@@ -82,10 +72,6 @@ export function ProfessionalProfileCard() {
                 {skill}
               </span>
             ))}
-
-            <button className="rounded-full border border-dashed border-[#1A362D] px-3 py-1 text-sm font-medium text-[#1A362D] transition hover:bg-[#E8F5F1]">
-              + Add Skill
-            </button>
           </div>
         </div>
 
@@ -96,8 +82,9 @@ export function ProfessionalProfileCard() {
 
           <textarea
             rows={6}
-            defaultValue="Experienced electrician specializing in residential and commercial electrical installation, maintenance, and repair. I take pride in delivering safe, reliable, and high-quality workmanship."
-            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+            value={worker.bio}
+            readOnly
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none"
           />
         </div>
       </div>

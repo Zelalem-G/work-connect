@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/button";
@@ -5,48 +8,95 @@ import { Card } from "@/components/card";
 import { ProgressBar } from "@/components/progress-bar";
 import { StatCard } from "@/components/stat-card";
 import { CustomerRequestCard } from "@/components/customer-request-card";
+import { getCustomerDashboardData } from "@/services/customer.service";
+
+function formatDate(value) {
+  if (!value) return "Not selected";
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatStatus(status) {
+  switch (status) {
+    case "accepted":
+      return "ACCEPTED";
+    case "pending":
+      return "PENDING";
+    case "completed":
+      return "COMPLETED";
+    case "in_progress":
+      return "IN PROGRESS";
+    default:
+      return status?.toUpperCase() || "PENDING";
+  }
+}
 
 export default function CustomerDashboard() {
-  const requests = [
-    {
-      id: 1,
-      title: "Water Pipe Installation",
-      workerName: "Abebe Kebede",
-      workerAvatar: "/api/placeholder/100/100",
-      date: "Jun 14, 2026",
-      time: "10:00 AM",
-      status: "ACCEPTED",
-    },
-    {
-      id: 2,
-      title: "Electrical Repair",
-      workerName: "Samuel Tesfaye",
-      workerAvatar: "/api/placeholder/100/100",
-      date: "Jun 18, 2026",
-      time: "02:30 PM",
-      status: "PENDING",
-    },
-    {
-      id: 3,
-      title: "Kitchen Plumbing",
-      workerName: "Mulugeta Desta",
-      workerAvatar: "/api/placeholder/100/100",
-      date: "Jun 08, 2026",
-      time: "09:00 AM",
-      status: "COMPLETED",
-      rating: 5,
-      hasReceipt: true,
-    },
-    {
-      id: 4,
-      title: "House Painting",
-      workerName: "Bereket Alemu",
-      workerAvatar: "/api/placeholder/100/100",
-      date: "Jun 20, 2026",
-      time: "01:00 PM",
-      status: "IN PROGRESS",
-    },
-  ];
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadDashboard() {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getCustomerDashboardData();
+
+        if (mounted) {
+          setDashboard(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load your dashboard right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const stats = dashboard?.stats;
+  const requests = (dashboard?.recentRequests || []).map((request) => ({
+    id: request.id,
+    title: request.title,
+    workerName: request.worker?.fullName || "Assigned worker",
+    workerAvatar: request.worker?.profileImage || "/api/placeholder/100/100",
+    date: formatDate(request.preferredDate),
+    time: request.preferredTime || "Flexible",
+    status: formatStatus(request.status),
+    rating: request.status === "completed" ? 5 : undefined,
+    hasReceipt: request.status === "completed",
+  }));
+
+  const activeRequests = stats?.activeRequests ?? 0;
+  const totalRequests = stats?.totalRequests ?? 0;
+  const completedRequests = stats?.completedRequests ?? 0;
+  const pendingRequests = stats?.pendingRequests ?? 0;
+  const trustScore = Math.min(
+    99,
+    90 + completedRequests * 2 + (activeRequests > 0 ? 2 : 0),
+  );
 
   return (
     <div className="space-y-8 ">
@@ -70,7 +120,7 @@ export default function CustomerDashboard() {
           >
             Active Requests
             <span className="ml-2 rounded-full bg-gray-800 px-2 py-0.5 text-xs text-white">
-              4
+              {activeRequests}
             </span>
           </Button>
 
@@ -88,25 +138,40 @@ export default function CustomerDashboard() {
         {/* Left Side */}
 
         <div className="space-y-4 lg:col-span-8">
-          {requests.map((request) => (
-            <Link
-              key={request.id}
-              href={`/customer/dashboard/requests/${request.id}`}
-            >
-              <div className="transition-transform duration-200 hover:scale-[1.01]">
-                <CustomerRequestCard
-                  title={request.title}
-                  workerName={request.workerName}
-                  workerAvatar={request.workerAvatar}
-                  date={request.date}
-                  time={request.time}
-                  status={request.status}
-                  rating={request.rating}
-                  hasReceipt={request.hasReceipt}
-                />
-              </div>
-            </Link>
-          ))}
+          {loading ? (
+            <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+              Loading your requests...
+            </Card>
+          ) : error ? (
+            <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+              {error}
+            </Card>
+          ) : requests.length === 0 ? (
+            <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+              You have no requests yet. Create your first request to get
+              started.
+            </Card>
+          ) : (
+            requests.map((request) => (
+              <Link
+                key={request.id}
+                href={`/customer/dashboard/requests/${request.id}`}
+              >
+                <div className="transition-transform duration-200 hover:scale-[1.01]">
+                  <CustomerRequestCard
+                    title={request.title}
+                    workerName={request.workerName}
+                    workerAvatar={request.workerAvatar}
+                    date={request.date}
+                    time={request.time}
+                    status={request.status}
+                    rating={request.rating}
+                    hasReceipt={request.hasReceipt}
+                  />
+                </div>
+              </Link>
+            ))
+          )}
         </div>
 
         {/* Right Side */}
@@ -118,14 +183,14 @@ export default function CustomerDashboard() {
             <h3 className="mb-4 text-lg font-medium">Trust Score</h3>
 
             <div className="mb-6 flex items-baseline gap-2">
-              <span className="text-5xl font-extrabold">98</span>
+              <span className="text-5xl font-extrabold">{trustScore}</span>
 
               <span className="text-lg text-emerald-200">/ 100</span>
             </div>
 
             <div className="mb-4">
               <ProgressBar
-                progress={98}
+                progress={trustScore}
                 colorClass="bg-[#B8860B]"
                 trackClass="bg-white/20"
               />
@@ -158,7 +223,7 @@ export default function CustomerDashboard() {
           <div className="grid grid-cols-2 gap-4">
             <StatCard
               title="REQUESTS"
-              value="18"
+              value={totalRequests.toString()}
               icon={
                 <svg
                   className="h-5 w-5"
@@ -178,7 +243,7 @@ export default function CustomerDashboard() {
 
             <StatCard
               title="COMPLETED"
-              value="12"
+              value={completedRequests.toString()}
               icon={
                 <svg
                   className="h-5 w-5 text-emerald-600"
@@ -198,7 +263,7 @@ export default function CustomerDashboard() {
 
             <StatCard
               title="PENDING"
-              value="3"
+              value={pendingRequests.toString()}
               icon={
                 <svg
                   className="h-5 w-5 text-amber-500"
@@ -245,32 +310,34 @@ export default function CustomerDashboard() {
             </h3>
 
             <div className="space-y-4">
-              <div className="border-l-4 border-emerald-500 pl-3">
-                <p className="font-medium text-gray-900">
-                  Water Pipe Installation accepted
-                </p>
+              {requests.length === 0 ? (
                 <p className="text-sm text-gray-500">
-                  Today • Worker confirmed your request.
+                  Activity will appear here as soon as you create requests.
                 </p>
-              </div>
+              ) : (
+                requests.slice(0, 3).map((request, index) => {
+                  const borderClass =
+                    request.status === "COMPLETED"
+                      ? "border-emerald-500"
+                      : request.status === "PENDING"
+                        ? "border-amber-500"
+                        : "border-[#1A362D]";
 
-              <div className="border-l-4 border-amber-500 pl-3">
-                <p className="font-medium text-gray-900">
-                  Electrical Repair pending
-                </p>
-                <p className="text-sm text-gray-500">
-                  Yesterday • Waiting for worker response.
-                </p>
-              </div>
-
-              <div className="border-l-4 border-[#1A362D] pl-3">
-                <p className="font-medium text-gray-900">
-                  Kitchen Plumbing completed
-                </p>
-                <p className="text-sm text-gray-500">
-                  Last week • Service successfully completed.
-                </p>
-              </div>
+                  return (
+                    <div
+                      key={`${request.id}-${index}`}
+                      className={`border-l-4 ${borderClass} pl-3`}
+                    >
+                      <p className="font-medium text-gray-900">
+                        {request.title} {request.status.toLowerCase()}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {request.date} • {request.workerName}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </Card>
         </div>

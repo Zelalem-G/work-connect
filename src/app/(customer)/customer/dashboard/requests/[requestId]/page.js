@@ -1,93 +1,200 @@
-import Link from "next/link";
+"use client";
 
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+
+import { Card } from "@/components/card";
 import RequestHeader from "@/features/customer-requests/RequestHeader";
 import RequestOverview from "@/features/customer-requests/RequestOverview";
 import RequestDescription from "@/features/customer-requests/RequestDescription";
 import RequestPhotos from "@/features/customer-requests/RequestPhotos";
 import RequestTimeline from "@/features/customer-requests/RequestTimeline";
-
 import WorkerSummarySidebar from "@/features/customer-requests/WorkerSummarySidebar";
 import RequestActions from "@/features/customer-requests/RequestActions";
+import { getCustomerRequestDetails } from "@/services/request.service";
+
+function normalizeStatus(status) {
+  switch (status) {
+    case "pending":
+      return "PENDING";
+    case "accepted":
+      return "ACCEPTED";
+    case "in_progress":
+    case "in progress":
+    case "in-progress":
+      return "IN PROGRESS";
+    case "completed":
+      return "COMPLETED";
+    case "cancelled":
+    case "canceled":
+      return "CANCELLED";
+    default:
+      return status?.toUpperCase() || "PENDING";
+  }
+}
+
+function formatDate(value) {
+  if (!value) return "Not selected";
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default function RequestDetailsPage() {
-  // Dummy data for frontend development
+  const params = useParams();
+  const requestId = params?.requestId;
 
-  const request = {
-    id: 1,
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    title: "Kitchen Plumbing Repair",
+  useEffect(() => {
+    let mounted = true;
 
-    status: "IN PROGRESS",
+    async function loadRequest() {
+      if (!requestId) {
+        return;
+      }
 
-    requestedDate: "June 10, 2026",
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getCustomerRequestDetails(requestId);
 
-    preferredDate: "June 12, 2026",
+        if (mounted) {
+          setDetails(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load this request right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
 
-    location: "Bole, Addis Ababa",
+    loadRequest();
 
-    budget: "1,500 ETB",
+    return () => {
+      mounted = false;
+    };
+  }, [requestId]);
 
-    description:
-      "My kitchen sink has been leaking for several days and the water pressure has also decreased. I would like someone to inspect the pipes, repair any leaks, and make sure everything is functioning properly. The issue seems to be underneath the sink cabinet.",
+  const request = useMemo(() => {
+    if (!details?.request) {
+      return null;
+    }
 
-    photos: ["/api/placeholder/400/300", "/api/placeholder/400/300"],
+    const status = normalizeStatus(details.request.status);
 
-    timeline: [
-      {
-        title: "Request Submitted",
-        date: "June 10, 2026",
-        completed: true,
-      },
-      {
-        title: "Worker Accepted",
-        date: "June 10, 2026",
-        completed: true,
-      },
-      {
-        title: "Work In Progress",
-        date: "June 11, 2026",
-        completed: true,
-      },
-      {
-        title: "Job Completed",
-        date: "",
-        completed: false,
-      },
-    ],
-  };
+    return {
+      ...details.request,
+      title: details.request.title || "Service Request",
+      status,
+      requestedDate: formatDate(details.request.createdAt),
+      preferredDate: formatDate(details.request.preferredDate),
+      location: details.request.location || "Not specified",
+      budget: details.request.budget
+        ? `${details.request.budget} ETB`
+        : "Flexible",
+      description: details.request.description || "No description provided.",
+      photos: details.request.photos || details.request.images || [],
+      timeline: [
+        {
+          title: "Request Submitted",
+          date: formatDate(details.request.createdAt),
+          completed: true,
+        },
+        {
+          title: "Worker Accepted",
+          date:
+            status === "ACCEPTED" ||
+            status === "IN PROGRESS" ||
+            status === "COMPLETED"
+              ? formatDate(details.request.updatedAt)
+              : "",
+          completed:
+            status === "ACCEPTED" ||
+            status === "IN PROGRESS" ||
+            status === "COMPLETED",
+        },
+        {
+          title: "Work In Progress",
+          date:
+            status === "IN PROGRESS" || status === "COMPLETED"
+              ? formatDate(details.request.updatedAt)
+              : "",
+          completed: status === "IN PROGRESS" || status === "COMPLETED",
+        },
+        {
+          title: "Job Completed",
+          date:
+            status === "COMPLETED" ? formatDate(details.request.updatedAt) : "",
+          completed: status === "COMPLETED",
+        },
+      ],
+    };
+  }, [details]);
 
-  const worker = {
-    id: 12,
+  const worker = useMemo(() => {
+    if (!details?.worker) {
+      return null;
+    }
 
-    name: "Abebe Kebede",
+    return {
+      id: details.worker.id,
+      name: details.worker.fullName || details.worker.name,
+      profession: details.worker.primarySkill || "Skilled professional",
+      rating: details.worker.rating || 4.8,
+      reviews: details.worker.totalReviews || 0,
+      verified: details.worker.verified || false,
+      avatar: details.worker.profileImage || "/api/placeholder/200/200",
+      responseTime: "Usually within 2 hours",
+      estimatedDuration: "1 Day",
+    };
+  }, [details]);
 
-    profession: "Certified Plumber",
+  if (loading) {
+    return (
+      <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+        Loading request details...
+      </Card>
+    );
+  }
 
-    rating: 4.9,
+  if (error) {
+    return (
+      <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+        {error}
+      </Card>
+    );
+  }
 
-    reviews: 124,
-
-    verified: true,
-
-    avatar: "/api/placeholder/200/200",
-
-    responseTime: "Usually within 2 hours",
-
-    estimatedDuration: "1 Day",
-  };
+  if (!request || !worker) {
+    return (
+      <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+        This request could not be found.
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-
       <RequestHeader title={request.title} status={request.status} />
 
-      {/* Main Grid */}
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Side */}
-
-        <div className="lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-8">
           <RequestOverview request={request} worker={worker} />
 
           <RequestDescription description={request.description} />
@@ -97,9 +204,7 @@ export default function RequestDetailsPage() {
           <RequestTimeline timeline={request.timeline} />
         </div>
 
-        {/* Right Side */}
-
-        <div className="lg:col-span-4 space-y-6">
+        <div className="space-y-6 lg:col-span-4">
           <WorkerSummarySidebar
             worker={worker}
             status={request.status}

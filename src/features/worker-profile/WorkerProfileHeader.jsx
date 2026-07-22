@@ -3,33 +3,30 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 
-export function WorkerProfileHeader() {
+export function WorkerProfileHeader({ worker }) {
   return (
     <Card className="p-8">
       <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-        {/* Left */}
         <div className="flex items-center gap-6">
-          <Avatar
-            src="/api/placeholder/200/200"
-            alt="Worker Profile"
-            size="2xl"
-          />
+          <Avatar src={worker.profileImage} alt={worker.fullName} size="2xl" />
 
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-3xl font-bold text-[#1A362D]">
-                Abebe Kebede
+                {worker.fullName}
               </h2>
 
-              <Badge
-                variant="success"
-                className="rounded-full px-3 py-1 text-xs font-semibold"
-              >
-                VERIFIED
-              </Badge>
+              {worker.verified && (
+                <Badge
+                  variant="success"
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                >
+                  VERIFIED
+                </Badge>
+              )}
             </div>
 
-            <p className="mt-2 text-lg text-gray-500">Certified Electrician</p>
+            <p className="mt-2 text-lg text-gray-500">{worker.primarySkill}</p>
 
             <div className="mt-4 flex flex-wrap items-center gap-5 text-sm text-gray-600">
               <div className="flex items-center gap-1">
@@ -38,7 +35,10 @@ export function WorkerProfileHeader() {
                 </svg>
 
                 <span className="font-medium">
-                  4.9 <span className="text-gray-500">(128 reviews)</span>
+                  {worker.rating.toFixed(1)}{" "}
+                  <span className="text-gray-500">
+                    ({worker.totalReviews} reviews)
+                  </span>
                 </span>
               </div>
 
@@ -56,7 +56,7 @@ export function WorkerProfileHeader() {
                     d="M17.657 16.657L13.414 12.414A8 8 0 1116 9a8 8 0 01-2.586 5.914l4.243 4.243z"
                   />
                 </svg>
-                Addis Ababa
+                {worker.city}
               </div>
 
               <div className="flex items-center gap-1">
@@ -67,16 +67,14 @@ export function WorkerProfileHeader() {
                 >
                   <circle cx="10" cy="10" r="5" />
                 </svg>
-                Available
+                {worker.availability}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button variant="secondary">Change Photo</Button>
-
           <Button variant="primary">Save Changes</Button>
         </div>
       </div>

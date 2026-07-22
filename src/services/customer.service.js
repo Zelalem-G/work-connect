@@ -3,6 +3,7 @@ import { delay } from "@/lib/delay";
 import { getCurrentUser, setCurrentUser } from "./auth.service";
 
 import { findMany, findOne, updateOne } from "./storage.service";
+import { getWorkerById } from "./worker.service";
 
 /**
  * Returns the currently logged-in customer.
@@ -110,6 +111,16 @@ export async function getCustomerDashboardData() {
   }
 
   const requests = await getCustomerRequests();
+  const recentRequests = [];
+
+  for (const request of requests.slice(0, 5)) {
+    const worker = await getWorkerById(request.workerId);
+
+    recentRequests.push({
+      ...request,
+      worker,
+    });
+  }
 
   const stats = {
     totalRequests: requests.length,
@@ -117,8 +128,9 @@ export async function getCustomerDashboardData() {
     pendingRequests: requests.filter((request) => request.status === "pending")
       .length,
 
-    acceptedRequests: requests.filter(
-      (request) => request.status === "accepted",
+    activeRequests: requests.filter(
+      (request) =>
+        request.status === "accepted" || request.status === "in_progress",
     ).length,
 
     completedRequests: requests.filter(
@@ -129,6 +141,80 @@ export async function getCustomerDashboardData() {
   return {
     customer,
     stats,
-    recentRequests: requests.slice(0, 5),
+    recentRequests,
   };
+}
+
+/**
+ * Returns the current customer's profile view model.
+ */
+export async function getCustomerProfileData() {
+  await delay();
+
+  const customer = await getCurrentCustomer();
+
+  if (!customer) {
+    return null;
+  }
+
+  const requests = await getCustomerRequests();
+  const favoriteWorkers = await getCustomerFavorites();
+
+  const memberSince = customer.createdAt
+    ? new Date(customer.createdAt).getFullYear()
+    : new Date().getFullYear();
+
+  return {
+    customer: {
+      ...customer,
+      name: customer.fullName,
+      role: "Customer",
+      badge: "Gold Member",
+      avatar: customer.profileImage || "/api/placeholder/150/150",
+      address: customer.address || "Addis Ababa",
+      memberSince,
+    },
+    stats: {
+      requests: requests.length,
+      completed: requests.filter((request) => request.status === "completed")
+        .length,
+      favorites: favoriteWorkers.length,
+      memberSince,
+    },
+    favoriteWorkers,
+  };
+}
+
+/**
+ * Returns a shortlist of workers that the customer has worked with.
+ */
+export async function getCustomerFavorites() {
+  await delay();
+
+  const customer = await getCurrentCustomer();
+
+  if (!customer) {
+    return [];
+  }
+
+  const requests = await getCustomerRequests();
+  const workerIds = [...new Set(requests.map((request) => request.workerId))];
+
+  const favorites = [];
+
+  for (const workerId of workerIds.slice(0, 3)) {
+    const worker = await getWorkerById(workerId);
+
+    if (worker) {
+      favorites.push({
+        id: worker.id,
+        name: worker.fullName,
+        profession: worker.primarySkill || "Skilled Professional",
+        rating: worker.rating || 0,
+        avatar: worker.profileImage || "/api/placeholder/100/100",
+      });
+    }
+  }
+
+  return favorites;
 }

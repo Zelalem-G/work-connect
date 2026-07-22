@@ -1,54 +1,54 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import ProfileHeader from "@/features/customer-profile/ProfileHeader";
 import PersonalInfoCard from "@/features/customer-profile/PersonalInfoCard";
 import SecurityCard from "@/features/customer-profile/SecurityCard";
 import AccountStats from "@/features/customer-profile/AccountStats";
 import FavoritesCard from "@/features/customer-profile/FavoritesCard";
 import DangerZone from "@/features/customer-profile/DangerZone";
+import { Card } from "@/components/card";
+import { getCustomerProfileData } from "@/services/customer.service";
 
 export default function CustomerProfilePage() {
-  const customer = {
-    name: "Zelalem Getahun",
-    role: "Customer",
-    memberSince: "2026",
-    badge: "Gold Member",
-    avatar: "/api/placeholder/150/150",
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    email: "zelalem@example.com",
-    phone: "+251 912 345 678",
-    city: "Addis Ababa",
-    address: "Bole, Addis Ababa",
-  };
+  useEffect(() => {
+    let mounted = true;
 
-  const stats = {
-    requests: 18,
-    completed: 15,
-    favorites: 5,
-    memberSince: 2026,
-  };
+    async function loadProfileData() {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getCustomerProfileData();
 
-  const favoriteWorkers = [
-    {
-      id: 1,
-      name: "Abebe Kebede",
-      profession: "Certified Plumber",
-      rating: 4.9,
-      avatar: "/api/placeholder/100/100",
-    },
-    {
-      id: 2,
-      name: "Hana Tesfaye",
-      profession: "Electrician",
-      rating: 4.8,
-      avatar: "/api/placeholder/100/100",
-    },
-    {
-      id: 3,
-      name: "Samuel Bekele",
-      profession: "Carpenter",
-      rating: 4.7,
-      avatar: "/api/placeholder/100/100",
-    },
-  ];
+        if (mounted) {
+          setProfileData(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load your profile right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadProfileData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const customer = profileData?.customer;
+  const stats = profileData?.stats;
+  const favoriteWorkers = profileData?.favoriteWorkers || [];
 
   return (
     <div className="space-y-8">
@@ -67,29 +67,45 @@ export default function CustomerProfilePage() {
 
       {/* Profile Hero */}
 
-      <ProfileHeader customer={customer} />
+      {loading ? (
+        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+          Loading your profile...
+        </Card>
+      ) : error ? (
+        <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+          {error}
+        </Card>
+      ) : customer ? (
+        <>
+          <ProfileHeader customer={customer} />
 
-      {/* Main Content */}
+          {/* Main Content */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left */}
 
-        <div className="lg:col-span-8 space-y-6">
-          <PersonalInfoCard customer={customer} />
+            <div className="lg:col-span-8 space-y-6">
+              <PersonalInfoCard customer={customer} />
 
-          <SecurityCard />
-        </div>
+              <SecurityCard />
+            </div>
 
-        {/* Right */}
+            {/* Right */}
 
-        <div className="lg:col-span-4 space-y-6">
-          <AccountStats stats={stats} />
+            <div className="lg:col-span-4 space-y-6">
+              <AccountStats stats={stats} />
 
-          <FavoritesCard workers={favoriteWorkers} />
+              <FavoritesCard workers={favoriteWorkers} />
 
-          <DangerZone />
-        </div>
-      </div>
+              <DangerZone />
+            </div>
+          </div>
+        </>
+      ) : (
+        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+          No profile information is available yet.
+        </Card>
+      )}
     </div>
   );
 }

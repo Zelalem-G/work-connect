@@ -97,6 +97,15 @@ export function insert(collectionName, item) {
 }
 
 /**
+ * Inserts an item into a collection.
+ *
+ * This alias matches the service layer convention used by the app.
+ */
+export function insertOne(collectionName, item) {
+  return insert(collectionName, item);
+}
+
+/**
  * Updates the first matching item.
  */
 export function updateOne(collectionName, predicate, updates) {

@@ -1,17 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-export default function RequestForm() {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    location: "",
-    date: "",
-    budget: "",
-    photos: [],
-  });
-
+export default function RequestForm({ formData, setFormData }) {
   function handleChange(e) {
     const { name, value } = e.target;
 

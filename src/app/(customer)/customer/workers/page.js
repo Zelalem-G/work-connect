@@ -1,6 +1,15 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+
 import { Avatar } from "@/components/avatar";
+import { Card } from "@/components/card";
+import {
+  getWorkers,
+  searchWorkers,
+  getWorkersByProfession,
+} from "@/services/worker.service";
 
 const categories = [
   "All",
@@ -12,62 +21,96 @@ const categories = [
   "Welder",
 ];
 
-const workers = [
-  {
-    id: 1,
-    name: "Abebe Kebede",
-    skill: "Electrician",
-    location: "Addis Ababa",
-    rating: 4.9,
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Samuel Tadesse",
-    skill: "Plumber",
-    location: "Bahir Dar",
-    rating: 4.7,
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Henok Alemu",
-    skill: "Carpenter",
-    location: "Hawassa",
-    rating: 4.8,
-    verified: false,
-  },
-  {
-    id: 4,
-    name: "Mikiyas Desta",
-    skill: "Painter",
-    location: "Adama",
-    rating: 4.6,
-    verified: true,
-  },
-  {
-    id: 5,
-    name: "Bereket Hailu",
-    skill: "Mason",
-    location: "Addis Ababa",
-    rating: 4.9,
-    verified: true,
-  },
-  {
-    id: 6,
-    name: "Nathan Solomon",
-    skill: "Welder",
-    location: "Dire Dawa",
-    rating: 4.8,
-    verified: false,
-  },
-];
-
 export default function WorkersPage() {
+  const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadWorkers() {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getWorkers();
+
+        if (mounted) {
+          setWorkers(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load workers right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadWorkers();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function reloadWorkers() {
+      try {
+        setLoading(true);
+        setError("");
+
+        let data = [];
+
+        if (search.trim()) {
+          data = await searchWorkers(search);
+        } else if (selectedCategory !== "All") {
+          data = await getWorkersByProfession(selectedCategory);
+        } else {
+          data = await getWorkers();
+        }
+
+        if (mounted) {
+          setWorkers(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to filter workers right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    reloadWorkers();
+
+    return () => {
+      mounted = false;
+    };
+  }, [search, selectedCategory]);
+
+  const displayedWorkers = useMemo(() => {
+    return (workers || []).map((worker) => ({
+      id: worker.id,
+      name: worker.fullName,
+      skill: worker.primarySkill,
+      location: worker.city,
+      rating: worker.rating || 0,
+      verified: worker.verified,
+      image: worker.profileImage || "/api/placeholder/150/150",
+    }));
+  }, [workers]);
+
   return (
     <div className="space-y-8">
-      {/* Header */}
-
       <section>
         <h1 className="text-3xl font-bold text-gray-900">
           Find Skilled Workers
@@ -78,8 +121,6 @@ export default function WorkersPage() {
           project.
         </p>
       </section>
-
-      {/* Search */}
 
       <section>
         <div className="relative">
@@ -100,87 +141,100 @@ export default function WorkersPage() {
           <input
             type="text"
             placeholder="Search workers..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-12 pr-4 shadow-sm outline-none transition focus:border-[#1A362D]"
           />
         </div>
       </section>
 
-      {/* Categories */}
-
       <section className="flex flex-wrap gap-3">
-        {categories.map((category, index) => (
-          <button
-            key={category}
-            className={`rounded-full px-5 py-2 text-sm font-medium transition ${
-              index === 0
-                ? "bg-[#1A362D] text-white"
-                : "bg-white text-gray-600 shadow-sm hover:bg-gray-100"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        {categories.map((category) => {
+          const active = selectedCategory === category;
+
+          return (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                active
+                  ? "bg-[#1A362D] text-white"
+                  : "bg-white text-gray-600 shadow-sm hover:bg-gray-100"
+              }`}
+            >
+              {category}
+            </button>
+          );
+        })}
       </section>
 
-      {/* Workers */}
-
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {workers.map((worker) => (
-          <div
-            key={worker.id}
-            className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-          >
-            {/* Top */}
+        {loading ? (
+          <Card className="col-span-full rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+            Loading workers...
+          </Card>
+        ) : error ? (
+          <Card className="col-span-full rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+            {error}
+          </Card>
+        ) : displayedWorkers.length === 0 ? (
+          <Card className="col-span-full rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+            No workers match your search yet.
+          </Card>
+        ) : (
+          displayedWorkers.map((worker) => (
+            <div
+              key={worker.id}
+              className="rounded-2xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <Avatar src={worker.image} alt={worker.name} size="lg" />
 
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar
-                  src="/api/placeholder/150/150"
-                  alt={worker.name}
-                  size="lg"
-                />
+                  <div>
+                    <h2 className="font-semibold text-gray-900">
+                      {worker.name}
+                    </h2>
 
+                    <p className="text-sm text-gray-500">{worker.skill}</p>
+                  </div>
+                </div>
+
+                {worker.verified && (
+                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                    Verified
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-6 flex items-center justify-between">
                 <div>
-                  <h2 className="font-semibold text-gray-900">{worker.name}</h2>
+                  <p className="text-sm text-gray-500">Rating</p>
 
-                  <p className="text-sm text-gray-500">{worker.skill}</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-yellow-500">★</span>
+
+                    <span className="font-medium">
+                      {worker.rating.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Location</p>
+
+                  <p className="font-medium text-gray-900">{worker.location}</p>
                 </div>
               </div>
 
-              {worker.verified && (
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                  Verified
-                </span>
-              )}
+              <Link href={`/customer/workers/${worker.id}`}>
+                <button className="mt-6 w-full rounded-xl bg-[#1A362D] py-3 font-medium text-white transition hover:opacity-90">
+                  View Full Profile
+                </button>
+              </Link>
             </div>
-
-            {/* Rating */}
-
-            <div className="mt-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Rating</p>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-yellow-500">★</span>
-
-                  <span className="font-medium">{worker.rating}</span>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Location</p>
-
-                <p className="font-medium text-gray-900">{worker.location}</p>
-              </div>
-            </div>
-
-            {/* Button */}
-
-            <button className="mt-6 w-full rounded-xl bg-[#1A362D] py-3 font-medium text-white transition hover:opacity-90">
-              View Full Profile
-            </button>
-          </div>
-        ))}
+          ))
+        )}
       </section>
     </div>
   );

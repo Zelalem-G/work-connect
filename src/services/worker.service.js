@@ -3,6 +3,8 @@ import { delay } from "@/lib/delay";
 import { getCurrentUser, setCurrentUser } from "./auth.service";
 
 import { findMany, findOne, updateOne } from "./storage.service";
+import { getWorkerRating } from "./review.service";
+import { getPortfolioByWorker } from "./portfolio.service";
 
 /**
  * Combines a user and worker profile into one object.
@@ -224,5 +226,36 @@ export async function getWorkerDashboardData() {
     worker,
     stats,
     recentRequests: requests.slice(0, 5),
+  };
+}
+
+/**
+ * Returns worker portfolio items.
+ */
+export async function getWorkerPortfolio(workerId) {
+  return getPortfolioByWorker(workerId);
+}
+
+/**
+ * Returns a richer worker profile payload for customer-facing pages.
+ */
+export async function getWorkerProfileData(workerId) {
+  await delay();
+
+  const worker = await getWorkerById(workerId);
+
+  if (!worker) {
+    return null;
+  }
+
+  const [portfolio, rating] = await Promise.all([
+    getWorkerPortfolio(workerId),
+    getWorkerRating(workerId),
+  ]);
+
+  return {
+    worker,
+    portfolio,
+    rating,
   };
 }
