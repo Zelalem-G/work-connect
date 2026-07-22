@@ -1,5 +1,5 @@
 import { delay } from "@/lib/delay";
-import { getDatabase, saveDatabase } from "@/mock/initialize";
+import { getDatabase, saveDatabase } from "@/services/storage.service";
 
 const CURRENT_USER_KEY = "workconnect-current-user";
 
@@ -147,7 +147,7 @@ export async function registerWorker(data) {
 
     skills: data.skills ?? [],
 
-    bio: data.about,
+    bio: data.bio ?? data.about ?? "",
 
     experience: Number(data.experience),
 
