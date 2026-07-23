@@ -43,8 +43,11 @@ export function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        type="button"
         onClick={() => setOpen((value) => !value)}
         className="rounded-full transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#1A362D]"
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
         <Avatar
           src={user.profileImage}
@@ -69,10 +72,15 @@ export function UserMenu() {
               </p>
 
               <p className="truncate text-sm text-gray-500">{user.email}</p>
+
+              <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[#1A362D]">
+                {user.role}
+              </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={handleLogout}
             className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
           >

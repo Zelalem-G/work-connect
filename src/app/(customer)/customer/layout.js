@@ -1,13 +1,10 @@
 "use client";
 
-import { Avatar } from "@/components/avatar";
 import RouteGuard from "@/components/auth/RouteGuard";
 import { TopNav } from "@/components/top-nav";
-import { useAuthStore } from "@/store/authStore";
+import { UserMenu } from "@/components/user-menu";
 
 export default function CustomerLayout({ children }) {
-  const user = useAuthStore((state) => state.user);
-
   const customerLinks = [
     {
       name: "Workers",
@@ -31,7 +28,10 @@ export default function CustomerLayout({ children }) {
           searchPlaceholder="Search workers..."
           rightActions={
             <>
-              <button className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+              <button
+                type="button"
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
                 <svg
                   className="h-5 w-5"
                   fill="none"
@@ -47,11 +47,7 @@ export default function CustomerLayout({ children }) {
                 </svg>
               </button>
 
-              <Avatar
-                src={user?.profileImage || "/api/placeholder/150/150"}
-                alt={`${user?.fullName || "Customer"} Profile`}
-                size="md"
-              />
+              <UserMenu />
             </>
           }
         />
