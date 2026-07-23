@@ -1,26 +1,26 @@
 import { Card } from "@/components/card";
 
-const items = [
-  {
-    label: "Total Earnings",
-    value: "ETB 42,850",
-  },
-  {
-    label: "Completed Jobs",
-    value: "142 Jobs",
-  },
-  {
-    label: "Average Rating",
-    value: "4.9 / 5.0",
-  },
-  {
-    label: "Verification Status",
-    value: "Verified",
-    accent: true,
-  },
-];
+export function PerformanceSummaryCard({ stats, summary }) {
+  const items = [
+    {
+      label: "Total Earnings",
+      value: `ETB ${Number(stats?.totalEarnings || 0).toLocaleString()}`,
+    },
+    {
+      label: "Completed Jobs",
+      value: `${stats?.completedJobs ?? 0} Jobs`,
+    },
+    {
+      label: "Average Rating",
+      value: `${(stats?.averageRating ?? 0).toFixed(1)} / 5.0`,
+    },
+    {
+      label: "Verification Status",
+      value: summary?.verificationStatus || "Pending",
+      accent: true,
+    },
+  ];
 
-export function PerformanceSummaryCard() {
   return (
     <Card>
       <h2 className="text-xl font-bold text-[#1A362D]">Performance Summary</h2>

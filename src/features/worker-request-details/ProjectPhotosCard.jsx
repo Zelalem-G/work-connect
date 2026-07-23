@@ -1,13 +1,8 @@
 import { Card } from "@/components/card";
 
-const projectPhotos = [
-  "/api/placeholder/600/600",
-  "/api/placeholder/600/600",
-  "/api/placeholder/600/600",
-  "/api/placeholder/600/600",
-];
+export default function ProjectPhotosCard({ request }) {
+  const projectPhotos = request?.images?.length ? request.images : [];
 
-export default function ProjectPhotosCard() {
   return (
     <Card>
       <div className="space-y-5">
@@ -21,26 +16,32 @@ export default function ProjectPhotosCard() {
           </div>
 
           <span className="rounded-full bg-[#E8F5F1] px-3 py-1 text-xs font-semibold text-[#1A362D]">
-            {projectPhotos.length} Photos
+            {projectPhotos.length} Photo{projectPhotos.length === 1 ? "" : "s"}
           </span>
         </div>
 
         {/* Gallery */}
         <div className="grid grid-cols-2 gap-3">
-          {projectPhotos.map((photo, index) => (
-            <button
-              key={index}
-              className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
-            >
-              <img
-                src={photo}
-                alt={`Project Photo ${index + 1}`}
-                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-              />
+          {projectPhotos.length > 0 ? (
+            projectPhotos.map((photo, index) => (
+              <button
+                key={index}
+                className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
+              >
+                <img
+                  src={photo}
+                  alt={`Project Photo ${index + 1}`}
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
 
-              <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
-            </button>
-          ))}
+                <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
+              </button>
+            ))
+          ) : (
+            <div className="col-span-2 rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+              No project photos were uploaded for this request.
+            </div>
+          )}
         </div>
 
         {/* Footer */}

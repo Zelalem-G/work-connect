@@ -1,10 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/button";
+import { Card } from "@/components/card";
 import { VerificationNotice } from "@/features/worker-verification/VerificationNotice";
 import { UploadGuidelines } from "@/features/worker-verification/UploadGuidelines";
 import { GovernmentIdUpload } from "@/features/worker-verification/GovernmentIdUpload";
 import { CertificateUpload } from "@/features/worker-verification/CertificateUpload";
+import { getCurrentWorker } from "@/services/worker.service";
 
 export default function VerificationPage() {
+  const [worker, setWorker] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadWorker() {
+      try {
+        const currentWorker = await getCurrentWorker();
+
+        if (mounted) {
+          setWorker(currentWorker);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load your verification status.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadWorker();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       {/* Header */}
@@ -20,7 +58,17 @@ export default function VerificationPage() {
         </p>
       </div>
 
-      <VerificationNotice />
+      {loading ? (
+        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+          Loading your verification status...
+        </Card>
+      ) : error ? (
+        <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+          {error}
+        </Card>
+      ) : (
+        <VerificationNotice worker={worker} />
+      )}
 
       <UploadGuidelines />
 

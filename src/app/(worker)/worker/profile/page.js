@@ -9,8 +9,10 @@ import { PortfolioCard } from "@/features/worker-profile/PortfolioCard";
 import { SecurityCard } from "@/features/worker-profile/SecurityCard";
 import { DangerZoneCard } from "@/features/worker-profile/DangerZoneCard";
 import { Card } from "@/components/card";
-import { getCurrentWorker } from "@/services/worker.service";
-import { getPortfolioByWorker } from "@/services/portfolio.service";
+import {
+  getCurrentWorker,
+  getWorkerProfileData,
+} from "@/services/worker.service";
 
 export default function WorkerProfilePage() {
   const [worker, setWorker] = useState(null);
@@ -34,11 +36,11 @@ export default function WorkerProfilePage() {
           );
         }
 
-        const items = await getPortfolioByWorker(currentWorker.id);
+        const profileData = await getWorkerProfileData(currentWorker.id);
 
         if (mounted) {
-          setWorker(currentWorker);
-          setPortfolioItems(items);
+          setWorker(profileData?.worker || currentWorker);
+          setPortfolioItems(profileData?.portfolio || []);
         }
       } catch (err) {
         if (mounted) {

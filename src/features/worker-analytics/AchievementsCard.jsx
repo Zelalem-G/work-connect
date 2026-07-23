@@ -1,29 +1,6 @@
 import { Card } from "@/components/card";
 
-const achievements = [
-  {
-    icon: "🏆",
-    title: "Top Rated Worker",
-    description: "Maintain a rating above 4.8.",
-  },
-  {
-    icon: "⭐",
-    title: "100+ Jobs Completed",
-    description: "Successfully completed over 100 jobs.",
-  },
-  {
-    icon: "✅",
-    title: "Verified Professional",
-    description: "Identity and certificates verified.",
-  },
-  {
-    icon: "📸",
-    title: "Portfolio Available",
-    description: "Customers can view your previous work.",
-  },
-];
-
-export function AchievementsCard() {
+export function AchievementsCard({ achievements = [] }) {
   return (
     <Card>
       <h2 className="text-xl font-bold text-[#1A362D]">Achievements</h2>

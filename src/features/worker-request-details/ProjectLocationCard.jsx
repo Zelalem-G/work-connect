@@ -1,6 +1,6 @@
 import { Card } from "@/components/card";
 
-export default function ProjectLocationCard() {
+export default function ProjectLocationCard({ request }) {
   return (
     <Card>
       <div className="space-y-5">
@@ -74,9 +74,7 @@ export default function ProjectLocationCard() {
               <h3 className="font-semibold text-gray-900">Customer Address</h3>
 
               <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                Bole, Cameroon Street,
-                <br />
-                Addis Ababa, Ethiopia
+                {request?.location || "Location not specified"}
               </p>
             </div>
           </div>

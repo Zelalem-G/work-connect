@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { Switch } from "@/components/switch";
 
-export default function DashboardHeader() {
+export default function DashboardHeader({ worker, stats }) {
   const [isAvailable, setIsAvailable] = useState(true);
+
+  const summary = useMemo(() => {
+    const pending = Number(stats?.pendingRequests || 0);
+    const accepted = Number(stats?.acceptedRequests || 0);
+
+    return {
+      pendingLabel: pending === 1 ? "1 new request" : `${pending} new requests`,
+      activeLabel: accepted === 1 ? "1 active job" : `${accepted} active jobs`,
+    };
+  }, [stats]);
 
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:p-8">
@@ -14,16 +24,17 @@ export default function DashboardHeader() {
           <p className="text-sm font-medium text-gray-500">Worker Dashboard</p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#1A362D]">
-            Welcome back, Dawit 👋
+            Welcome back, {worker?.fullName?.split(" ")[0] || "there"} 👋
           </h1>
 
           <p className="mt-2 max-w-2xl text-gray-600">
             You have{" "}
             <span className="font-semibold text-[#1A362D]">
-              3 new job requests
+              {summary.pendingLabel}
             </span>{" "}
             waiting for your response and{" "}
-            <span className="font-semibold">2 active jobs</span> in progress.
+            <span className="font-semibold">{summary.activeLabel}</span> in
+            progress.
           </p>
         </div>
 

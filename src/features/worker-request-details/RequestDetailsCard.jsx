@@ -1,6 +1,10 @@
 import { Card } from "@/components/card";
 
-export default function RequestDetailsCard() {
+export default function RequestDetailsCard({ request }) {
+  const budget = request?.budget
+    ? `ETB ${Number(request.budget).toLocaleString()}`
+    : "Negotiable";
+
   return (
     <Card className="space-y-6">
       <div>
@@ -17,7 +21,9 @@ export default function RequestDetailsCard() {
             Service Category
           </p>
 
-          <p className="mt-2 font-semibold text-gray-900">Plumbing</p>
+          <p className="mt-2 font-semibold text-gray-900">
+            {request?.title ? request.title.split(" ").slice(-1)[0] : "Service"}
+          </p>
         </div>
 
         <div>
@@ -33,7 +39,9 @@ export default function RequestDetailsCard() {
             Preferred Date
           </p>
 
-          <p className="mt-2 font-semibold text-gray-900">June 28, 2026</p>
+          <p className="mt-2 font-semibold text-gray-900">
+            {request?.preferredDate || "To be confirmed"}
+          </p>
         </div>
 
         <div>
@@ -41,7 +49,9 @@ export default function RequestDetailsCard() {
             Preferred Time
           </p>
 
-          <p className="mt-2 font-semibold text-gray-900">10:00 AM</p>
+          <p className="mt-2 font-semibold text-gray-900">
+            {request?.preferredTime || "Flexible"}
+          </p>
         </div>
       </div>
 
@@ -49,15 +59,7 @@ export default function RequestDetailsCard() {
         <h3 className="font-semibold text-gray-900">Project Description</h3>
 
         <p className="mt-4 leading-8 text-gray-600">
-          My kitchen sink has been leaking underneath the cabinet for the last
-          few days. I believe one of the pipes may have cracked and water is
-          slowly dripping whenever the sink is used.
-        </p>
-
-        <p className="mt-4 leading-8 text-gray-600">
-          I would like someone to inspect the plumbing, replace any damaged
-          parts if necessary, and ensure there are no additional hidden leaks.
-          The work should preferably be completed this week.
+          {request?.description || "No description provided."}
         </p>
       </div>
 
@@ -71,13 +73,15 @@ export default function RequestDetailsCard() {
         <div>
           <p className="text-sm text-gray-500">Budget</p>
 
-          <p className="mt-1 font-semibold text-[#1A362D]">ETB 1,200</p>
+          <p className="mt-1 font-semibold text-[#1A362D]">{budget}</p>
         </div>
 
         <div>
           <p className="text-sm text-gray-500">Request ID</p>
 
-          <p className="mt-1 font-semibold text-gray-900">#REQ-20341</p>
+          <p className="mt-1 font-semibold text-gray-900">
+            #{request?.id || "REQ"}
+          </p>
         </div>
       </div>
     </Card>

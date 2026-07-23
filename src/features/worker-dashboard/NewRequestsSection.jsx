@@ -2,7 +2,11 @@ import Link from "next/link";
 import { Badge } from "@/components/badge";
 import { WorkerRequestCard } from "@/components/worker-request-card";
 
-export default function NewRequestsSection() {
+export default function NewRequestsSection({ requests }) {
+  const pendingRequests = (requests || []).filter(
+    (request) => request.status === "Pending",
+  );
+
   return (
     <section>
       <div className="mb-5 flex items-center justify-between">
@@ -16,36 +20,29 @@ export default function NewRequestsSection() {
           </p>
         </div>
 
-        <Badge variant="alert">3 Waiting</Badge>
+        <Badge variant="alert">{pendingRequests.length} Waiting</Badge>
       </div>
 
       <div className="space-y-4">
-        <WorkerRequestCard
-          name="Saba Tekle"
-          location="Bole, Addis Ababa"
-          avatar="/api/placeholder/100/100"
-          price="ETB 1,200"
-          priceType="ESTIMATED"
-          description="Need a professional deep clean for a 2-bedroom apartment before Friday. Cleaning supplies will be provided."
-        />
-
-        <WorkerRequestCard
-          name="Henok Alemu"
-          location="Kazanchis, Addis Ababa"
-          avatar="/api/placeholder/100/100"
-          price="ETB 850"
-          priceType="FIXED"
-          description="Looking for help assembling furniture and mounting four mirrors."
-        />
-
-        <WorkerRequestCard
-          name="Marta Girma"
-          location="CMC, Addis Ababa"
-          avatar="/api/placeholder/100/100"
-          price="ETB 2,500"
-          priceType="NEGOTIABLE"
-          description="Bathroom plumbing maintenance and replacement of two leaking pipes."
-        />
+        {pendingRequests.length > 0 ? (
+          pendingRequests
+            .slice(0, 3)
+            .map((request) => (
+              <WorkerRequestCard
+                key={request.id}
+                name={request.customer}
+                location={request.location}
+                avatar={request.avatar}
+                price={request.budget}
+                priceType="ESTIMATED"
+                description={request.description}
+              />
+            ))
+        ) : (
+          <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+            No new requests right now.
+          </div>
+        )}
       </div>
 
       <div className="mt-6">

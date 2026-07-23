@@ -1,12 +1,12 @@
 import { StatCard } from "@/components/stat-card";
 
-export function AnalyticsStats() {
+export function AnalyticsStats({ stats }) {
   return (
     <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
         title="TOTAL EARNINGS"
-        value="ETB 42,850"
-        trend="+8% this month"
+        value={`ETB ${Number(stats?.totalEarnings || 0).toLocaleString()}`}
+        trend="Based on completed work"
         variant="primary"
         icon={
           <svg
@@ -27,8 +27,8 @@ export function AnalyticsStats() {
 
       <StatCard
         title="COMPLETED JOBS"
-        value="142"
-        trend="12 completed this month"
+        value={String(stats?.completedJobs ?? 0)}
+        trend="Completed jobs"
         icon={
           <svg
             className="h-5 w-5"
@@ -50,10 +50,11 @@ export function AnalyticsStats() {
         title="AVERAGE RATING"
         value={
           <>
-            4.9 <span className="text-lg font-medium text-gray-400">/ 5.0</span>
+            {(stats?.averageRating ?? 0).toFixed(1)}{" "}
+            <span className="text-lg font-medium text-gray-400">/ 5.0</span>
           </>
         }
-        trend="Based on 118 reviews"
+        trend={`Based on ${stats?.totalReviews ?? 0} reviews`}
         icon={
           <svg
             className="h-5 w-5 text-[#B8860B]"
@@ -67,7 +68,7 @@ export function AnalyticsStats() {
 
       <StatCard
         title="TOTAL REVIEWS"
-        value="118"
+        value={String(stats?.totalReviews ?? 0)}
         trend="★★★★★ Excellent"
         icon={
           <svg

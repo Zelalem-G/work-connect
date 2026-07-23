@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const filters = [
   "All",
   "Pending",
@@ -11,15 +9,13 @@ const filters = [
   "Declined",
 ];
 
-export default function RequestFilters() {
-  const [activeFilter, setActiveFilter] = useState("All");
-
+export default function RequestFilters({ activeFilter, onFilterChange }) {
   return (
     <div className="flex flex-wrap gap-3">
       {filters.map((filter) => (
         <button
           key={filter}
-          onClick={() => setActiveFilter(filter)}
+          onClick={() => onFilterChange(filter)}
           className={`rounded-full border px-5 py-2 text-sm font-semibold transition-all ${
             activeFilter === filter
               ? "border-[#1A362D] bg-[#1A362D] text-white shadow-sm"

@@ -1,4 +1,4 @@
-export function AnalyticsHeader() {
+export function AnalyticsHeader({ worker, summary }) {
   return (
     <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
@@ -16,7 +16,7 @@ export function AnalyticsHeader() {
         <p className="text-sm font-semibold text-[#1A362D]">Current Status</p>
 
         <p className="mt-1 text-lg font-bold text-[#1A362D]">
-          Top Rated Worker ⭐
+          {summary?.verificationStatus || "Worker Status"}
         </p>
       </div>
     </section>

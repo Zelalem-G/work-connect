@@ -1,16 +1,71 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
 import RequestFilters from "@/features/worker-requests/RequestFilters";
 import WorkerRequestList from "@/features/worker-requests/WorkerRequestList";
+import { Card } from "@/components/card";
+import { getWorkerRequestListData } from "@/services/worker.service";
 
 export default function WorkerRequestsPage() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadRequests() {
+      try {
+        const result = await getWorkerRequestListData();
+
+        if (mounted) {
+          setData(result);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err.message || "Unable to load your requests right now.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRequests();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredRequests = useMemo(() => {
+    const requests = data?.requests || [];
+
+    return requests.filter((request) => {
+      const matchesQuery =
+        `${request.customer} ${request.title} ${request.location}`
+          .toLowerCase()
+          .includes(query.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "All" || request.status === statusFilter;
+
+      return matchesQuery && matchesStatus;
+    });
+  }, [data, query, statusFilter]);
+
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-[#1A362D]">
             My Requests
           </h1>
- 
+
           <p className="mt-2 text-gray-600">
             Review, manage, and respond to incoming customer service requests.
           </p>
@@ -34,6 +89,8 @@ export default function WorkerRequestsPage() {
 
             <input
               type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Search requests..."
               className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 shadow-sm outline-none transition focus:border-[#1A362D]"
             />
@@ -41,11 +98,22 @@ export default function WorkerRequestsPage() {
         </div>
       </div>
 
-      {/* Status Filters */}
-      <RequestFilters />
+      <RequestFilters
+        activeFilter={statusFilter}
+        onFilterChange={setStatusFilter}
+      />
 
-      {/* Request List */}
-      <WorkerRequestList />
+      {loading ? (
+        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+          Loading your requests...
+        </Card>
+      ) : error ? (
+        <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+          {error}
+        </Card>
+      ) : (
+        <WorkerRequestList requests={filteredRequests} />
+      )}
     </div>
   );
 }

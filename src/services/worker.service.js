@@ -6,6 +6,40 @@ import { findMany, findOne, updateOne } from "./storage.service";
 import { getWorkerRating } from "./review.service";
 import { getPortfolioByWorker } from "./portfolio.service";
 
+function formatRequestDate(request) {
+  if (!request?.createdAt) {
+    return "Pending";
+  }
+
+  const createdAt = new Date(request.createdAt);
+
+  if (Number.isNaN(createdAt.getTime())) {
+    return "Pending";
+  }
+
+  return createdAt.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatRequestStatus(status) {
+  switch (status) {
+    case "accepted":
+      return "Accepted";
+    case "in_progress":
+      return "In Progress";
+    case "completed":
+      return "Completed";
+    case "cancelled":
+    case "declined":
+      return "Declined";
+    default:
+      return "Pending";
+  }
+}
+
 /**
  * Combines a user and worker profile into one object.
  */
@@ -159,6 +193,53 @@ export async function getWorkerRequests() {
 }
 
 /**
+ * Returns a worker request list view model for the worker requests page.
+ */
+export async function getWorkerRequestListData() {
+  await delay();
+
+  const worker = await getCurrentWorker();
+
+  if (!worker) {
+    return {
+      worker: null,
+      requests: [],
+    };
+  }
+
+  const requests = await getWorkerRequests();
+
+  const requestList = await Promise.all(
+    requests.map(async (request) => {
+      const customer = findOne(
+        "users",
+        (user) => user.id === request.customerId && user.role === "customer",
+      );
+
+      return {
+        id: request.id,
+        customer: customer?.fullName || "Customer",
+        avatar: customer?.profileImage || "/api/placeholder/150/150",
+        title: request.title,
+        location: request.location || "Location not specified",
+        date: formatRequestDate(request),
+        budget: request.budget
+          ? `ETB ${request.budget.toLocaleString()}`
+          : "Negotiable",
+        status: formatRequestStatus(request.status),
+        description: request.description,
+        request,
+      };
+    }),
+  );
+
+  return {
+    worker,
+    requests: requestList,
+  };
+}
+
+/**
  * Searches workers.
  */
 export async function searchWorkers(query) {
@@ -257,5 +338,78 @@ export async function getWorkerProfileData(workerId) {
     worker,
     portfolio,
     rating,
+  };
+}
+
+/**
+ * Returns analytics data for the current worker.
+ */
+export async function getWorkerAnalyticsData() {
+  await delay();
+
+  const worker = await getCurrentWorker();
+
+  if (!worker) {
+    return null;
+  }
+
+  const [requests, portfolio, rating] = await Promise.all([
+    getWorkerRequests(),
+    getPortfolioByWorker(worker.id),
+    getWorkerRating(worker.id),
+  ]);
+
+  const completedJobs = requests.filter(
+    (request) => request.status === "completed",
+  );
+
+  const totalEarnings = completedJobs.reduce((sum, request) => {
+    return sum + Number(request.budget || 0);
+  }, 0);
+
+  const achievements = [
+    {
+      icon: "🏆",
+      title: worker.verified ? "Verified Professional" : "Rising Professional",
+      description: worker.verified
+        ? "Identity and certificates verified."
+        : "Complete verification to unlock more trust.",
+    },
+    {
+      icon: "⭐",
+      title: `${completedJobs.length}+ Jobs Completed`,
+      description: `Successfully completed ${completedJobs.length} jobs.`,
+    },
+    {
+      icon: "✅",
+      title:
+        worker.rating >= 4.8 ? "Top Rated Worker" : "Consistently Reliable",
+      description:
+        worker.rating >= 4.8
+          ? "Maintain a rating above 4.8."
+          : "Keep delivering excellent service.",
+    },
+    {
+      icon: "📸",
+      title: portfolio.length > 0 ? "Portfolio Available" : "Portfolio Pending",
+      description:
+        portfolio.length > 0
+          ? "Customers can view your previous work."
+          : "Add portfolio items to build trust.",
+    },
+  ];
+
+  return {
+    worker,
+    stats: {
+      totalEarnings,
+      completedJobs: completedJobs.length,
+      averageRating: rating.rating,
+      totalReviews: rating.totalReviews,
+    },
+    achievements,
+    summary: {
+      verificationStatus: worker.verified ? "Verified" : "Pending Verification",
+    },
   };
 }

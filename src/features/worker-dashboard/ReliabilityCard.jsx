@@ -2,7 +2,10 @@ import { Card } from "@/components/card";
 import { ProgressBar } from "@/components/progress-bar";
 import { Badge } from "@/components/badge";
 
-export default function ReliabilityCard() {
+export default function ReliabilityCard({ worker }) {
+  const rating = Number(worker?.rating || 0);
+  const progress = Math.min(100, Math.round(rating * 20));
+
   return (
     <Card className="bg-[#1A362D] text-gray-800 relative overflow-hidden">
       <div className="relative z-10">
@@ -14,7 +17,7 @@ export default function ReliabilityCard() {
 
         <div className="mt-6 flex items-end justify-between">
           <div>
-            <p className="text-5xl font-bold">98%</p>
+            <p className="text-5xl font-bold">{progress}%</p>
 
             <p className="mt-2 text-sm text-emerald-200">
               Customer Satisfaction
@@ -24,16 +27,16 @@ export default function ReliabilityCard() {
 
         <div className="mt-6">
           <ProgressBar
-            progress={98}
+            progress={progress}
             colorClass="bg-[#B8860B]"
             trackClass="bg-white/20"
           />
         </div>
 
         <p className="mt-5 text-sm leading-relaxed text-emerald-200">
-          You are among the highest-rated workers in your area. Continue
-          responding quickly and completing jobs on time to maintain your Top
-          Rated status.
+          Your current rating is {rating.toFixed(1)} out of 5. Continue
+          responding quickly and completing jobs on time to maintain your
+          standing.
         </p>
       </div>
 

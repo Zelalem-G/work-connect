@@ -3,12 +3,12 @@ import { Card } from "@/components/card";
 import ProjectLocationCard from "./ProjectLocationCard";
 import ProjectPhotosCard from "./ProjectPhotosCard";
 
-export default function RequestSidebar() {
+export default function RequestSidebar({ request }) {
   return (
     <div className="space-y-6">
-      <ProjectLocationCard />
+      <ProjectLocationCard request={request} />
 
-      <ProjectPhotosCard />
+      <ProjectPhotosCard request={request} />
 
       <Card>
         <div className="space-y-6">

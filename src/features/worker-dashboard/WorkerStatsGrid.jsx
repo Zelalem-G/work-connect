@@ -1,12 +1,12 @@
 import { StatCard } from "@/components/stat-card";
 
-export default function WorkerStatsGrid() {
+export default function WorkerStatsGrid({ stats, worker }) {
   return (
     <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
       <StatCard
         title="Completed Jobs"
-        value="142"
-        trend="+12 this month"
+        value={String(stats?.completedRequests ?? 0)}
+        trend={`${stats?.completedRequests ? "Tracked from your requests" : "No completed jobs yet"}`}
         icon={
           <svg
             className="h-5 w-5"
@@ -26,7 +26,7 @@ export default function WorkerStatsGrid() {
 
       <StatCard
         title="Active Jobs"
-        value="2"
+        value={String(stats?.acceptedRequests ?? 0)}
         trend="Currently in progress"
         icon={
           <svg
@@ -47,9 +47,9 @@ export default function WorkerStatsGrid() {
 
       <StatCard
         title="Total Earnings"
-        value="ETB 42,850"
+        value={`ETB ${Number(stats?.totalEarnings ?? 0).toLocaleString()}`}
         variant="primary"
-        trend="+ETB 8,400 this month"
+        trend="Based on completed requests"
         icon={
           <svg
             className="h-5 w-5"
@@ -71,10 +71,11 @@ export default function WorkerStatsGrid() {
         title="Average Rating"
         value={
           <>
-            4.9 <span className="text-lg font-medium text-gray-400">/ 5</span>
+            {worker?.rating?.toFixed(1) ?? "0.0"}{" "}
+            <span className="text-lg font-medium text-gray-400">/ 5</span>
           </>
         }
-        trend="120 customer reviews"
+        trend={`${worker?.totalReviews ?? 0} customer reviews`}
         icon={
           <svg
             className="h-5 w-5 text-[#B8860B]"

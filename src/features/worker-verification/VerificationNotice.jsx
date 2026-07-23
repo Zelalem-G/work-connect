@@ -1,6 +1,8 @@
 import { Card } from "@/components/card";
 
-export function VerificationNotice() {
+export function VerificationNotice({ worker }) {
+  const verified = Boolean(worker?.verified);
+
   return (
     <Card className="border-amber-200 bg-amber-50">
       <div className="flex items-start gap-4">
@@ -22,14 +24,15 @@ export function VerificationNotice() {
 
         <div>
           <h2 className="text-lg font-bold text-amber-900">
-            Your account is not verified
+            {verified
+              ? "Your account is verified"
+              : "Your account is not verified"}
           </h2>
 
           <p className="mt-2 text-sm leading-relaxed text-amber-800">
-            Verified workers receive higher visibility in search results,
-            increased customer trust, and access to more service requests.
-            Submit the required documents below to begin the verification
-            process.
+            {verified
+              ? "You are already eligible to receive more visibility and customer trust."
+              : "Verified workers receive higher visibility in search results, increased customer trust, and access to more service requests. Submit the required documents below to begin the verification process."}
           </p>
         </div>
       </div>
