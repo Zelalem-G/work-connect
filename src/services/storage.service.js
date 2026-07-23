@@ -19,15 +19,40 @@ const INITIAL_DATABASE = {
 };
 
 /**
- * Creates the mock database in localStorage
- * the first time the application runs.
+ * Creates or repairs the mock database stored in localStorage.
+ *
+ * If the database already exists, any missing collections are restored
+ * without overwriting existing data.
  */
 export function initializeDatabase() {
   const existing = localStorage.getItem(STORAGE_KEY);
 
-  if (existing) return;
+  if (!existing) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATABASE));
+    return;
+  }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATABASE));
+  let database;
+
+  try {
+    database = JSON.parse(existing);
+  } catch {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATABASE));
+    return;
+  }
+
+  let updated = false;
+
+  Object.entries(INITIAL_DATABASE).forEach(([collectionName, seedData]) => {
+    if (!Array.isArray(database[collectionName])) {
+      database[collectionName] = [...seedData];
+      updated = true;
+    }
+  });
+
+  if (updated) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(database));
+  }
 }
 
 /**
