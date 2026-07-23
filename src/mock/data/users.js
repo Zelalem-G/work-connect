@@ -47,8 +47,7 @@ export const users = [
     id: "worker-2",
     role: "worker",
 
-    firstName: "Dawit",
-    lastName: "Haile",
+    fullName: "Dawit Haile",
 
     email: "dawit@example.com",
     password: "password123",

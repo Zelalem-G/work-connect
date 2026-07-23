@@ -49,7 +49,7 @@ export default function CustomerLayout({ children }) {
 
               <Avatar
                 src={user?.profileImage || "/api/placeholder/150/150"}
-                alt={`${user?.firstName || "Customer"} Profile`}
+                alt={`${user?.fullName || "Customer"} Profile`}
                 size="md"
               />
             </>
