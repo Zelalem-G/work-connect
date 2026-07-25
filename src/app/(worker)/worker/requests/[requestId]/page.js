@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 
 import CustomerInfoCard from "@/features/worker-request-details/CustomerInfoCard";
 import RequestDetailsCard from "@/features/worker-request-details/RequestDetailsCard";
@@ -10,65 +10,124 @@ import ProjectLocationCard from "@/features/worker-request-details/ProjectLocati
 import ProjectPhotosCard from "@/features/worker-request-details/ProjectPhotosCard";
 import RequestSidebar from "@/features/worker-request-details/RequestSidebar";
 import { Card } from "@/components/card";
-import { getRequestById } from "@/services/request.service";
-import { getWorkerById } from "@/services/worker.service";
+import { getWorkerRequestDetails } from "@/services/request.service";
 
 export default function WorkerRequestDetailsPage() {
   const params = useParams();
+  const requestId = params?.requestId;
+
   const [request, setRequest] = useState(null);
-  const [worker, setWorker] = useState(null);
+  const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const loadRequest = useCallback(async () => {
+    if (!requestId) return;
+
+    try {
+      const data = await getWorkerRequestDetails(requestId);
+
+      if (!data) {
+        setRequest(null);
+        setCustomer(null);
+        return;
+      }
+
+      setRequest(data.request);
+      setCustomer(data.customer);
+    } catch (err) {
+      setError(err.message || "Unable to load this request right now.");
+    }
+  }, [requestId]);
+
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
 
-    async function loadRequest() {
+    async function initialize() {
+      if (!requestId) return;
+
       try {
-        const requestData = await getRequestById(params.requestId);
-        const workerData = requestData
-          ? await getWorkerById(requestData.workerId)
-          : null;
+        setLoading(true);
+        setError("");
 
-        if (mounted) {
-          setRequest(requestData);
-          setWorker(workerData);
+        const data = await getWorkerRequestDetails(requestId);
+
+        if (cancelled) return;
+
+        if (!data) {
+          setRequest(null);
+          setCustomer(null);
+          return;
         }
+
+        setRequest(data.request);
+        setCustomer(data.customer);
       } catch (err) {
-        if (mounted) {
+        if (!cancelled) {
           setError(err.message || "Unable to load this request right now.");
         }
       } finally {
-        if (mounted) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
     }
 
-    loadRequest();
+    initialize();
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
-  }, [params.requestId]);
+  }, [requestId]);
 
   const headerStatus = useMemo(() => {
-    if (!request?.status) {
-      return "Pending Request";
-    }
-
-    switch (request.status) {
+    switch (request?.status) {
       case "accepted":
         return "Accepted Request";
+
+      case "in_progress":
+        return "Work In Progress";
+
       case "completed":
+        return "Awaiting Customer Confirmation";
+
+      case "confirmed":
         return "Completed Request";
-      case "cancelled":
+
       case "declined":
         return "Declined Request";
+
+      case "cancelled":
+        return "Cancelled Request";
+
       default:
         return "Pending Request";
     }
   }, [request]);
+
+  if (loading) {
+    return (
+      <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+        Loading request details...
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+        {error}
+      </Card>
+    );
+  }
+
+  if (!request) {
+    return (
+      <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+        Request not found.
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -92,54 +151,37 @@ export default function WorkerRequestDetailsPage() {
         Back to Requests
       </Link>
 
-      {loading ? (
-        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-          Loading request details...
-        </Card>
-      ) : error ? (
-        <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
-          {error}
-        </Card>
-      ) : !request ? (
-        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-          Request not found.
-        </Card>
-      ) : (
-        <>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-[#1A362D]">
-                {request.title}
-              </h1>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#1A362D]">
+            {request.title}
+          </h1>
 
-              <p className="mt-2 text-gray-600">
-                Review the request carefully before accepting or declining the
-                service.
-              </p>
-            </div>
+          <p className="mt-2 text-gray-600">
+            Review the request and update its progress.
+          </p>
+        </div>
 
-            <span className="inline-flex w-fit rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-700">
-              {headerStatus}
-            </span>
-          </div>
+        <span className="inline-flex w-fit rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-700">
+          {headerStatus}
+        </span>
+      </div>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="space-y-6 lg:col-span-8">
-              <CustomerInfoCard request={request} worker={worker} />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-8">
+          <CustomerInfoCard customer={customer} request={request} />
 
-              <RequestDetailsCard request={request} />
+          <RequestDetailsCard request={request} />
 
-              <ProjectLocationCard request={request} />
+          <ProjectLocationCard request={request} />
 
-              <ProjectPhotosCard request={request} />
-            </div>
+          <ProjectPhotosCard request={request} />
+        </div>
 
-            <div className="lg:col-span-4">
-              <RequestSidebar request={request} />
-            </div>
-          </div>
-        </>
-      )}
+        <div className="lg:col-span-4">
+          <RequestSidebar request={request} onRequestUpdated={loadRequest} />
+        </div>
+      </div>
     </div>
   );
 }

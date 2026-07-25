@@ -25,9 +25,13 @@ function normalizeStatus(status) {
       return "IN PROGRESS";
     case "completed":
       return "COMPLETED";
+    case "confirmed":
+      return "CONFIRMED";
     case "cancelled":
     case "canceled":
       return "CANCELLED";
+    case "declined":
+      return "DECLINED";
     default:
       return status?.toUpperCase() || "PENDING";
   }
@@ -57,6 +61,15 @@ export default function RequestDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  async function handleRequestUpdated() {
+    try {
+      const data = await getCustomerRequestDetails(requestId);
+      setDetails(data);
+    } catch {
+      // Keep current state if refresh fails.
+    }
+  }
+
   useEffect(() => {
     let mounted = true;
 
@@ -68,6 +81,7 @@ export default function RequestDetailsPage() {
       try {
         setLoading(true);
         setError("");
+
         const data = await getCustomerRequestDetails(requestId);
 
         if (mounted) {
@@ -121,27 +135,36 @@ export default function RequestDetailsPage() {
           date:
             status === "ACCEPTED" ||
             status === "IN PROGRESS" ||
-            status === "COMPLETED"
+            status === "COMPLETED" ||
+            status === "CONFIRMED"
               ? formatDate(details.request.updatedAt)
               : "",
           completed:
             status === "ACCEPTED" ||
             status === "IN PROGRESS" ||
-            status === "COMPLETED",
+            status === "COMPLETED" ||
+            status === "CONFIRMED",
         },
         {
           title: "Work In Progress",
           date:
-            status === "IN PROGRESS" || status === "COMPLETED"
+            status === "IN PROGRESS" ||
+            status === "COMPLETED" ||
+            status === "CONFIRMED"
               ? formatDate(details.request.updatedAt)
               : "",
-          completed: status === "IN PROGRESS" || status === "COMPLETED",
+          completed:
+            status === "IN PROGRESS" ||
+            status === "COMPLETED" ||
+            status === "CONFIRMED",
         },
         {
           title: "Job Completed",
           date:
-            status === "COMPLETED" ? formatDate(details.request.updatedAt) : "",
-          completed: status === "COMPLETED",
+            status === "COMPLETED" || status === "CONFIRMED"
+              ? formatDate(details.request.updatedAt)
+              : "",
+          completed: status === "COMPLETED" || status === "CONFIRMED",
         },
       ],
     };
@@ -213,7 +236,11 @@ export default function RequestDetailsPage() {
             responseTime={worker.responseTime}
           />
 
-          <RequestActions status={request.status} />
+          <RequestActions
+            requestId={request.id}
+            status={request.status}
+            onRequestUpdated={handleRequestUpdated}
+          />
         </div>
       </div>
     </div>

@@ -25,6 +25,7 @@ export async function getRequests() {
 
 /**
  * Returns a request by id.
+ * Mainly used by admin pages.
  */
 export async function getRequestById(requestId) {
   await delay();
@@ -48,7 +49,6 @@ export async function createRequest(data) {
     id: crypto.randomUUID(),
 
     customerId: customer.id,
-
     workerId: data.workerId,
 
     title: data.title,
@@ -64,6 +64,7 @@ export async function createRequest(data) {
     images: data.images ?? data.photos ?? [],
 
     status: "pending",
+
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -86,9 +87,6 @@ export async function updateRequest(requestId, updates) {
 /**
  * Deletes a request.
  */
-/**
- * Deletes a request.
- */
 export async function deleteRequest(requestId) {
   await delay();
 
@@ -96,7 +94,8 @@ export async function deleteRequest(requestId) {
 }
 
 /**
- * Returns a request together with its related worker.
+ * Returns a request together with its assigned worker.
+ * Used by customer request details.
  */
 export async function getCustomerRequestDetails(requestId) {
   await delay();
@@ -125,28 +124,84 @@ export async function getCustomerRequestDetails(requestId) {
 }
 
 /**
- * Worker accepts a request.
+ * Returns a request together with its customer.
+ * Used by worker request details.
  */
-export async function acceptRequest(requestId) {
-  return updateRequest(requestId, {
-    status: "accepted",
-  });
+export async function getWorkerRequestDetails(requestId) {
+  await delay();
+
+  const worker = getCurrentUser();
+
+  if (!worker || worker.role !== "worker") {
+    return null;
+  }
+
+  const request = findOne(
+    "requests",
+    (request) => request.id === requestId && request.workerId === worker.id,
+  );
+
+  if (!request) {
+    return null;
+  }
+
+  const customer = findOne(
+    "users",
+    (user) => user.id === request.customerId && user.role === "customer",
+  );
+
+  return {
+    request,
+    customer,
+  };
 }
 
 /**
- * Worker marks a request as completed.
+ * Updates the status of a request.
+ * Internal helper used by lifecycle actions.
+ */
+async function updateRequestStatus(requestId, status) {
+  return updateRequest(requestId, { status });
+}
+
+/**
+ * Worker accepts a request.
+ */
+export async function acceptRequest(requestId) {
+  return updateRequestStatus(requestId, "accepted");
+}
+
+/**
+ * Worker declines a request.
+ */
+export async function declineRequest(requestId) {
+  return updateRequestStatus(requestId, "declined");
+}
+
+/**
+ * Worker starts working on the request.
+ */
+export async function startRequest(requestId) {
+  return updateRequestStatus(requestId, "in_progress");
+}
+
+/**
+ * Worker marks the request as completed.
  */
 export async function completeRequest(requestId) {
-  return updateRequest(requestId, {
-    status: "completed",
-  });
+  return updateRequestStatus(requestId, "completed");
+}
+
+/**
+ * Customer confirms the completed work.
+ */
+export async function confirmCompletion(requestId) {
+  return updateRequestStatus(requestId, "confirmed");
 }
 
 /**
  * Customer cancels a request.
  */
 export async function cancelRequest(requestId) {
-  return updateRequest(requestId, {
-    status: "cancelled",
-  });
+  return updateRequestStatus(requestId, "cancelled");
 }
