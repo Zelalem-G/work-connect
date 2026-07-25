@@ -10,19 +10,17 @@ export default function RequestActions({
   status,
   onRequestUpdated,
 }) {
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null);
 
   async function handleCancel() {
     const confirmed = window.confirm(
       "Are you sure you want to cancel this request?",
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
-      setLoading(true);
+      setLoadingAction("cancel");
 
       await cancelRequest(requestId);
 
@@ -30,7 +28,7 @@ export default function RequestActions({
     } catch (error) {
       alert(error.message || "Unable to cancel request.");
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   }
 
@@ -39,12 +37,10 @@ export default function RequestActions({
       "Confirm that this job has been completed?",
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
-      setLoading(true);
+      setLoadingAction("confirm");
 
       await confirmCompletion(requestId);
 
@@ -52,7 +48,7 @@ export default function RequestActions({
     } catch (error) {
       alert(error.message || "Unable to confirm completion.");
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   }
 
@@ -63,48 +59,57 @@ export default function RequestActions({
       <div className="mt-5 space-y-3">
         {(status === "PENDING" || status === "ACCEPTED") && (
           <button
+            type="button"
             onClick={handleCancel}
-            disabled={loading}
+            disabled={loadingAction !== null}
             className="w-full rounded-xl bg-red-50 py-3 font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Cancelling..." : "Cancel Request"}
+            {loadingAction === "cancel" ? "Cancelling..." : "Cancel Request"}
           </button>
         )}
 
         {(status === "ACCEPTED" || status === "IN PROGRESS") && (
           <button
+            type="button"
             disabled
             className="w-full rounded-xl bg-[#E8F5F1] py-3 font-semibold text-[#1A362D] opacity-60"
           >
-            Contact Worker
+            Contact Worker (Coming Soon)
           </button>
         )}
 
         {status === "COMPLETED" && (
           <>
             <button
+              type="button"
               onClick={handleConfirmCompletion}
-              disabled={loading}
+              disabled={loadingAction !== null}
               className="w-full rounded-xl bg-[#E8F5F1] py-3 font-semibold text-[#1A362D] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Confirming..." : "Confirm Completion"}
+              {loadingAction === "confirm"
+                ? "Confirming..."
+                : "Confirm Completion"}
             </button>
 
             <button
+              type="button"
               disabled
               className="w-full rounded-xl border border-gray-200 py-3 font-semibold text-gray-700 opacity-60"
             >
-              Leave Review
+              Leave Review (Coming Soon)
             </button>
           </>
         )}
 
-        {(status === "CONFIRMED" || status === "CANCELLED") && (
+        {(status === "CONFIRMED" ||
+          status === "DECLINED" ||
+          status === "CANCELLED") && (
           <button
+            type="button"
             disabled
             className="w-full rounded-xl border border-gray-200 py-3 font-semibold text-gray-700 opacity-60"
           >
-            More Actions Coming Soon
+            No Actions Available
           </button>
         )}
       </div>

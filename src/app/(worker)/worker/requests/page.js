@@ -11,6 +11,7 @@ export default function WorkerRequestsPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
@@ -19,6 +20,9 @@ export default function WorkerRequestsPage() {
 
     async function loadRequests() {
       try {
+        setLoading(true);
+        setError("");
+
         const result = await getWorkerRequestListData();
 
         if (mounted) {
@@ -35,7 +39,7 @@ export default function WorkerRequestsPage() {
       }
     }
 
-    loadRequests();
+    void loadRequests();
 
     return () => {
       mounted = false;
@@ -46,10 +50,10 @@ export default function WorkerRequestsPage() {
     const requests = data?.requests || [];
 
     return requests.filter((request) => {
-      const matchesQuery =
-        `${request.customer} ${request.title} ${request.location}`
-          .toLowerCase()
-          .includes(query.toLowerCase());
+      const searchableText =
+        `${request.customer} ${request.title} ${request.location}`.toLowerCase();
+
+      const matchesQuery = searchableText.includes(query.toLowerCase());
 
       const matchesStatus =
         statusFilter === "All" || request.status === statusFilter;
@@ -57,6 +61,22 @@ export default function WorkerRequestsPage() {
       return matchesQuery && matchesStatus;
     });
   }, [data, query, statusFilter]);
+
+  if (loading) {
+    return (
+      <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+        Loading your requests...
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
+        {error}
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -103,17 +123,7 @@ export default function WorkerRequestsPage() {
         onFilterChange={setStatusFilter}
       />
 
-      {loading ? (
-        <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-          Loading your requests...
-        </Card>
-      ) : error ? (
-        <Card className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-600">
-          {error}
-        </Card>
-      ) : (
-        <WorkerRequestList requests={filteredRequests} />
-      )}
+      <WorkerRequestList requests={filteredRequests} />
     </div>
   );
 }

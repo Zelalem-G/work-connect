@@ -1,15 +1,15 @@
 import { Card } from "@/components/card";
 
 export default function ProjectPhotosCard({ request }) {
-  const projectPhotos = request?.images?.length ? request.images : [];
+  const projectPhotos = request?.photos || request?.images || [];
 
   return (
     <Card>
       <div className="space-y-5">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-[#1A362D]">Project Photos</h2>
+
             <p className="mt-1 text-sm text-gray-500">
               Images uploaded by the customer.
             </p>
@@ -20,22 +20,21 @@ export default function ProjectPhotosCard({ request }) {
           </span>
         </div>
 
-        {/* Gallery */}
         <div className="grid grid-cols-2 gap-3">
           {projectPhotos.length > 0 ? (
             projectPhotos.map((photo, index) => (
-              <button
+              <div
                 key={index}
                 className="group relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-gray-100"
               >
                 <img
                   src={photo}
-                  alt={`Project Photo ${index + 1}`}
+                  alt={`Project ${index + 1}`}
                   className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                 />
 
                 <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
-              </button>
+              </div>
             ))
           ) : (
             <div className="col-span-2 rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
@@ -44,7 +43,6 @@ export default function ProjectPhotosCard({ request }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="rounded-xl bg-gray-50 p-4">
           <div className="flex items-start gap-3">
             <div className="rounded-full bg-[#E8F5F1] p-2">
@@ -75,9 +73,8 @@ export default function ProjectPhotosCard({ request }) {
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                If these photos are not enough, you can request additional
-                pictures or ask the customer for more details before accepting
-                the job.
+                If these photos are not enough, you can contact the customer
+                after accepting the request for additional details.
               </p>
             </div>
           </div>

@@ -1,5 +1,60 @@
 import { Card } from "@/components/card";
 
+function formatDate(date) {
+  if (!date) {
+    return "Not specified";
+  }
+
+  const parsed = new Date(date);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatTime(time) {
+  if (!time) {
+    return "Flexible";
+  }
+
+  const [hours, minutes] = time.split(":");
+
+  const parsed = new Date();
+  parsed.setHours(Number(hours));
+  parsed.setMinutes(Number(minutes));
+
+  return parsed.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatSubmittedDate(date) {
+  if (!date) {
+    return "Unknown";
+  }
+
+  const parsed = new Date(date);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  return parsed.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export default function RequestDetailsCard({ request }) {
   const budget = request?.budget
     ? `ETB ${Number(request.budget).toLocaleString()}`
@@ -18,20 +73,22 @@ export default function RequestDetailsCard({ request }) {
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Service Category
+            Request Title
           </p>
 
           <p className="mt-2 font-semibold text-gray-900">
-            {request?.title ? request.title.split(" ").slice(-1)[0] : "Service"}
+            {request?.title || "Service Request"}
           </p>
         </div>
 
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Service Type
+            Current Status
           </p>
 
-          <p className="mt-2 font-semibold text-gray-900">On-site Service</p>
+          <p className="mt-2 font-semibold text-gray-900">
+            {request?.status || "pending"}
+          </p>
         </div>
 
         <div>
@@ -40,7 +97,7 @@ export default function RequestDetailsCard({ request }) {
           </p>
 
           <p className="mt-2 font-semibold text-gray-900">
-            {request?.preferredDate || "To be confirmed"}
+            {formatDate(request?.preferredDate)}
           </p>
         </div>
 
@@ -50,7 +107,7 @@ export default function RequestDetailsCard({ request }) {
           </p>
 
           <p className="mt-2 font-semibold text-gray-900">
-            {request?.preferredTime || "Flexible"}
+            {formatTime(request?.preferredTime)}
           </p>
         </div>
       </div>
@@ -67,7 +124,9 @@ export default function RequestDetailsCard({ request }) {
         <div>
           <p className="text-sm text-gray-500">Submitted</p>
 
-          <p className="mt-1 font-semibold text-gray-900">Today • 8:42 AM</p>
+          <p className="mt-1 font-semibold text-gray-900">
+            {formatSubmittedDate(request?.createdAt)}
+          </p>
         </div>
 
         <div>
@@ -80,7 +139,7 @@ export default function RequestDetailsCard({ request }) {
           <p className="text-sm text-gray-500">Request ID</p>
 
           <p className="mt-1 font-semibold text-gray-900">
-            #{request?.id || "REQ"}
+            {request?.id || "-"}
           </p>
         </div>
       </div>

@@ -28,13 +28,22 @@ function formatRequestStatus(status) {
   switch (status) {
     case "accepted":
       return "Accepted";
+
     case "in_progress":
       return "In Progress";
+
     case "completed":
       return "Completed";
+
+    case "confirmed":
+      return "Completed";
+
     case "cancelled":
+      return "Cancelled";
+
     case "declined":
       return "Declined";
+
     default:
       return "Pending";
   }
@@ -76,7 +85,6 @@ export async function getCurrentWorker() {
 
 /**
  * Returns every worker.
- * Used by public browsing and customer pages.
  */
 export async function getWorkers() {
   await delay();
@@ -97,7 +105,6 @@ export async function getWorkers() {
 
 /**
  * Returns one worker by id.
- * Used by public pages and admin pages.
  */
 export async function getWorkerById(workerId) {
   await delay();
@@ -120,7 +127,7 @@ export async function getWorkerById(workerId) {
 }
 
 /**
- * Updates the currently logged-in worker.
+ * Updates current worker profile.
  */
 export async function updateWorker(updates) {
   await delay();
@@ -173,7 +180,7 @@ export async function updateWorker(updates) {
 }
 
 /**
- * Returns every request assigned to the current worker.
+ * Returns every request assigned to current worker.
  */
 export async function getWorkerRequests() {
   await delay();
@@ -193,7 +200,41 @@ export async function getWorkerRequests() {
 }
 
 /**
- * Returns a worker request list view model for the worker requests page.
+ * Returns detailed worker request data.
+ * Used by worker request details page.
+ */
+export async function getWorkerRequestDetails(requestId) {
+  await delay();
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser || currentUser.role !== "worker") {
+    return null;
+  }
+
+  const request = findOne(
+    "requests",
+    (request) =>
+      request.id === requestId && request.workerId === currentUser.id,
+  );
+
+  if (!request) {
+    return null;
+  }
+
+  const customer = findOne(
+    "users",
+    (user) => user.id === request.customerId && user.role === "customer",
+  );
+
+  return {
+    request,
+    customer,
+  };
+}
+
+/**
+ * Returns worker request list view data.
  */
 export async function getWorkerRequestListData() {
   await delay();
@@ -209,29 +250,38 @@ export async function getWorkerRequestListData() {
 
   const requests = await getWorkerRequests();
 
-  const requestList = await Promise.all(
-    requests.map(async (request) => {
-      const customer = findOne(
-        "users",
-        (user) => user.id === request.customerId && user.role === "customer",
-      );
+  const requestList = requests.map((request) => {
+    const customer = findOne(
+      "users",
+      (user) => user.id === request.customerId && user.role === "customer",
+    );
 
-      return {
-        id: request.id,
-        customer: customer?.fullName || "Customer",
-        avatar: customer?.profileImage || "/api/placeholder/150/150",
-        title: request.title,
-        location: request.location || "Location not specified",
-        date: formatRequestDate(request),
-        budget: request.budget
-          ? `ETB ${request.budget.toLocaleString()}`
-          : "Negotiable",
-        status: formatRequestStatus(request.status),
-        description: request.description,
-        request,
-      };
-    }),
-  );
+    return {
+      id: request.id,
+
+      customer: customer?.fullName || "Customer",
+
+      avatar: customer?.profileImage || "/api/placeholder/150/150",
+
+      title: request.title,
+
+      location: request.location || "Location not specified",
+
+      date: formatRequestDate(request),
+
+      budget: request.budget
+        ? `ETB ${Number(request.budget).toLocaleString()}`
+        : "Negotiable",
+
+      status: request.status,
+
+      statusLabel: formatRequestStatus(request.status),
+
+      description: request.description || "No description provided.",
+
+      request,
+    };
+  });
 
   return {
     worker,
@@ -264,7 +314,7 @@ export async function searchWorkers(query) {
 }
 
 /**
- * Returns workers with a specific primary skill.
+ * Returns workers by profession.
  */
 export async function getWorkersByProfession(primarySkill) {
   await delay();
@@ -275,7 +325,7 @@ export async function getWorkersByProfession(primarySkill) {
 }
 
 /**
- * Returns dashboard data for the current worker.
+ * Returns worker dashboard data.
  */
 export async function getWorkerDashboardData() {
   await delay();
@@ -299,7 +349,8 @@ export async function getWorkerDashboardData() {
     ).length,
 
     completedRequests: requests.filter(
-      (request) => request.status === "completed",
+      (request) =>
+        request.status === "completed" || request.status === "confirmed",
     ).length,
   };
 
@@ -311,14 +362,14 @@ export async function getWorkerDashboardData() {
 }
 
 /**
- * Returns worker portfolio items.
+ * Returns worker portfolio.
  */
 export async function getWorkerPortfolio(workerId) {
   return getPortfolioByWorker(workerId);
 }
 
 /**
- * Returns a richer worker profile payload for customer-facing pages.
+ * Returns customer-facing worker profile data.
  */
 export async function getWorkerProfileData(workerId) {
   await delay();
@@ -342,7 +393,7 @@ export async function getWorkerProfileData(workerId) {
 }
 
 /**
- * Returns analytics data for the current worker.
+ * Returns worker analytics.
  */
 export async function getWorkerAnalyticsData() {
   await delay();
@@ -360,12 +411,14 @@ export async function getWorkerAnalyticsData() {
   ]);
 
   const completedJobs = requests.filter(
-    (request) => request.status === "completed",
+    (request) =>
+      request.status === "completed" || request.status === "confirmed",
   );
 
-  const totalEarnings = completedJobs.reduce((sum, request) => {
-    return sum + Number(request.budget || 0);
-  }, 0);
+  const totalEarnings = completedJobs.reduce(
+    (sum, request) => sum + Number(request.budget || 0),
+    0,
+  );
 
   const achievements = [
     {
@@ -375,11 +428,13 @@ export async function getWorkerAnalyticsData() {
         ? "Identity and certificates verified."
         : "Complete verification to unlock more trust.",
     },
+
     {
       icon: "⭐",
       title: `${completedJobs.length}+ Jobs Completed`,
       description: `Successfully completed ${completedJobs.length} jobs.`,
     },
+
     {
       icon: "✅",
       title:
@@ -389,6 +444,7 @@ export async function getWorkerAnalyticsData() {
           ? "Maintain a rating above 4.8."
           : "Keep delivering excellent service.",
     },
+
     {
       icon: "📸",
       title: portfolio.length > 0 ? "Portfolio Available" : "Portfolio Pending",
@@ -401,13 +457,16 @@ export async function getWorkerAnalyticsData() {
 
   return {
     worker,
+
     stats: {
       totalEarnings,
       completedJobs: completedJobs.length,
       averageRating: rating.rating,
       totalReviews: rating.totalReviews,
     },
+
     achievements,
+
     summary: {
       verificationStatus: worker.verified ? "Verified" : "Pending Verification",
     },

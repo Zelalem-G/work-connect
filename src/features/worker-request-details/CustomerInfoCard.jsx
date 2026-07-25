@@ -1,15 +1,21 @@
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 
-export default function CustomerInfoCard({ request, worker }) {
-  const customerName = worker?.fullName || "Customer";
-  const customerCity = worker?.city || request?.location || "Addis Ababa";
+export default function CustomerInfoCard({ customer, request }) {
+  const customerName = customer?.fullName || "Customer";
+
+  const customerCity =
+    customer?.city || request?.location || "Location not specified";
+
+  const customerPhone = customer?.phone || "Phone not available";
+
+  const customerEmail = customer?.email || "Email not available";
 
   return (
     <Card className="space-y-6">
       <div className="flex items-start gap-5">
         <Avatar
-          src={worker?.profileImage || "/api/placeholder/150/150"}
+          src={customer?.profileImage || "/api/placeholder/150/150"}
           alt={customerName}
           size="lg"
         />
@@ -22,20 +28,16 @@ export default function CustomerInfoCard({ request, worker }) {
               </h2>
 
               <p className="mt-1 text-gray-500">
-                Customer request for {request?.title}
+                Customer requesting {request?.title || "service"}
               </p>
             </div>
 
             <span className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
-              Verified Customer
+              Customer
             </span>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-6 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              ⭐<span>4.9 Rating</span>
-            </div>
-
             <div className="flex items-center gap-2">
               📍
               <span>{customerCity}</span>
@@ -43,7 +45,12 @@ export default function CustomerInfoCard({ request, worker }) {
 
             <div className="flex items-center gap-2">
               📞
-              <span>+251 91 234 5678</span>
+              <span>{customerPhone}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              📧
+              <span>{customerEmail}</span>
             </div>
           </div>
         </div>
@@ -51,24 +58,27 @@ export default function CustomerInfoCard({ request, worker }) {
 
       <div className="grid gap-4 border-t border-gray-100 pt-6 sm:grid-cols-3">
         <div className="rounded-xl bg-gray-50 p-4 text-center">
-          <p className="text-2xl font-bold text-[#1A362D]">
-            {worker?.completedJobs ?? 0}
-          </p>
-          <p className="mt-1 text-sm text-gray-500">Completed Requests</p>
+          <p className="text-2xl font-bold text-[#1A362D]">{customerCity}</p>
+
+          <p className="mt-1 text-sm text-gray-500">City</p>
         </div>
 
         <div className="rounded-xl bg-gray-50 p-4 text-center">
           <p className="text-2xl font-bold text-[#1A362D]">
-            {worker?.responseRate ?? 0}%
+            {request?.preferredDate || "Not specified"}
           </p>
-          <p className="mt-1 text-sm text-gray-500">Acceptance Rate</p>
+
+          <p className="mt-1 text-sm text-gray-500">Preferred Date</p>
         </div>
 
         <div className="rounded-xl bg-gray-50 p-4 text-center">
           <p className="text-2xl font-bold text-[#1A362D]">
-            {worker?.responseRate ? "Fast" : "Ready"}
+            {request?.budget
+              ? `ETB ${Number(request.budget).toLocaleString("en-US")}`
+              : "Negotiable"}
           </p>
-          <p className="mt-1 text-sm text-gray-500">Avg. Response Time</p>
+
+          <p className="mt-1 text-sm text-gray-500">Budget</p>
         </div>
       </div>
     </Card>
