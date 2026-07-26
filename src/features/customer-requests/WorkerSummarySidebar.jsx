@@ -26,7 +26,7 @@ export default function WorkerSummarySidebar({
         <div className="text-center">
           <Avatar
             src={worker.avatar}
-            alt={worker.name}
+            alt={worker.fullName}
             size="lg"
             className="mx-auto"
           />

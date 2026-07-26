@@ -16,7 +16,7 @@ export default function WorkerSummaryCard({ worker }) {
         {/* Info */}
 
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-900">{worker.name}</h2>
+          <h2 className="text-xl font-bold text-gray-900">{worker.fullName}</h2>
 
           <p className="mt-1 text-gray-500">{worker.title}</p>
 

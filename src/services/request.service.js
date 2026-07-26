@@ -12,6 +12,25 @@ import {
 import { getWorkerById } from "./worker.service";
 
 /**
+ * Normalizes a user object so the rest of the app
+ * only needs to work with fullName.
+ */
+function normalizeUser(user) {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    ...user,
+    fullName:
+      user.fullName ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+      user.name ||
+      "",
+  };
+}
+
+/**
  * Returns every request.
  * Mainly used by admin pages.
  */
@@ -115,7 +134,7 @@ export async function getCustomerRequestDetails(requestId) {
     return null;
   }
 
-  const worker = await getWorkerById(request.workerId);
+  const worker = normalizeUser(await getWorkerById(request.workerId));
 
   return {
     request,
@@ -145,9 +164,11 @@ export async function getWorkerRequestDetails(requestId) {
     return null;
   }
 
-  const customer = findOne(
-    "users",
-    (user) => user.id === request.customerId && user.role === "customer",
+  const customer = normalizeUser(
+    findOne(
+      "users",
+      (user) => user.id === request.customerId && user.role === "customer",
+    ),
   );
 
   return {

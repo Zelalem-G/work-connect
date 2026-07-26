@@ -17,7 +17,9 @@ export default function RequestSummary({ worker, request }) {
         <div className="flex items-center justify-between border-b border-gray-200 pb-3">
           <span className="font-medium text-gray-600">Worker</span>
 
-          <span className="font-semibold text-[#1A362D]">{worker.name}</span>
+          <span className="font-semibold text-[#1A362D]">
+            {worker.fullName}
+          </span>
         </div>
 
         {/* Location */}
