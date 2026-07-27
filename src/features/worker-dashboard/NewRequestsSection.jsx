@@ -1,10 +1,11 @@
 import Link from "next/link";
+
 import { Badge } from "@/components/badge";
 import { WorkerRequestCard } from "@/components/worker-request-card";
 
 export default function NewRequestsSection({ requests }) {
   const pendingRequests = (requests || []).filter(
-    (request) => request.status === "Pending",
+    (request) => request.status === "pending",
   );
 
   return (
@@ -16,7 +17,7 @@ export default function NewRequestsSection({ requests }) {
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Review incoming customer requests.
+            Review and respond to new customer requests.
           </p>
         </div>
 
@@ -35,12 +36,12 @@ export default function NewRequestsSection({ requests }) {
                 avatar={request.avatar}
                 price={request.budget}
                 priceType="ESTIMATED"
-                description={request.description}
+                description={request.title}
               />
             ))
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
-            No new requests right now.
+            You are all caught up! No new service requests at the moment.
           </div>
         )}
       </div>

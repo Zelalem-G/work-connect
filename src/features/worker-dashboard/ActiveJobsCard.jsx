@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Card } from "@/components/card";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
@@ -5,22 +7,38 @@ import { Button } from "@/components/button";
 export default function ActiveJobsCard({ requests }) {
   const activeRequests = (requests || []).filter(
     (request) =>
-      request.status === "Accepted" || request.status === "In Progress",
+      request.status === "accepted" || request.status === "in_progress",
   );
 
+  const formatStatus = (status) => {
+    switch (status) {
+      case "accepted":
+        return "Accepted";
+      case "in_progress":
+        return "In Progress";
+      default:
+        return status;
+    }
+  };
+
   return (
-    <Card className="p-0 overflow-hidden">
+    <Card className="overflow-hidden p-0">
       <div className="border-b border-gray-100 p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Active Jobs</h2>
 
-            <p className="mt-1 text-sm text-gray-500">Your current schedule.</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Jobs you have accepted or are currently working on.
+            </p>
           </div>
 
-          <button className="text-sm font-semibold text-[#1A362D] hover:underline">
+          <Link
+            href="/worker/requests"
+            className="text-sm font-semibold text-[#1A362D] hover:underline"
+          >
             View All
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -28,9 +46,9 @@ export default function ActiveJobsCard({ requests }) {
         {activeRequests.length > 0 ? (
           activeRequests.slice(0, 2).map((request) => (
             <div key={request.id} className="p-6">
-              <Badge className="mb-3">{request.status.toUpperCase()}</Badge>
+              <Badge className="mb-3">{formatStatus(request.status)}</Badge>
 
-              <div className="flex justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     {request.title}
@@ -41,27 +59,29 @@ export default function ActiveJobsCard({ requests }) {
                   </p>
                 </div>
 
-                <span className="font-bold text-[#1A362D]">
-                  {request.budget}
+                <span className="whitespace-nowrap font-bold text-[#1A362D]">
+                  {request.budget || "Negotiable"}
                 </span>
               </div>
             </div>
           ))
         ) : (
           <div className="p-6 text-sm text-gray-500">
-            No active jobs right now.
+            You do not have any active jobs right now.
           </div>
         )}
       </div>
 
       <div className="border-t border-gray-100 bg-gray-50 p-4">
-        <Button
-          variant="secondary"
-          fullWidth
-          className="bg-white font-semibold"
-        >
-          View Job History
-        </Button>
+        <Link href="/worker/requests">
+          <Button
+            variant="secondary"
+            fullWidth
+            className="bg-white font-semibold"
+          >
+            View All Requests
+          </Button>
+        </Link>
       </div>
     </Card>
   );

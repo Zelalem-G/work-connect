@@ -1,19 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+
 import { Button } from "@/components/button";
 import { Switch } from "@/components/switch";
 
 export default function DashboardHeader({ worker, stats }) {
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(worker?.availability ?? true);
 
   const summary = useMemo(() => {
     const pending = Number(stats?.pendingRequests || 0);
-    const accepted = Number(stats?.acceptedRequests || 0);
+
+    const active =
+      Number(stats?.acceptedRequests || 0) +
+      Number(stats?.inProgressRequests || 0);
 
     return {
       pendingLabel: pending === 1 ? "1 new request" : `${pending} new requests`,
-      activeLabel: accepted === 1 ? "1 active job" : `${accepted} active jobs`,
+
+      activeLabel: active === 1 ? "1 active job" : `${active} active jobs`,
     };
   }, [stats]);
 
@@ -33,18 +39,24 @@ export default function DashboardHeader({ worker, stats }) {
               {summary.pendingLabel}
             </span>{" "}
             waiting for your response and{" "}
-            <span className="font-semibold">{summary.activeLabel}</span> in
-            progress.
+            <span className="font-semibold text-[#1A362D]">
+              {summary.activeLabel}
+            </span>{" "}
+            you are currently working on.
           </p>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <Button
-            variant="accent"
-            className="rounded-xl px-6 font-semibold shadow-sm"
-          >
-            Verify Account
-          </Button>
+          {!worker?.verified && (
+            <Link href="/worker/verification">
+              <Button
+                variant="accent"
+                className="rounded-xl px-6 font-semibold shadow-sm"
+              >
+                Verify Account
+              </Button>
+            </Link>
+          )}
 
           <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-5 py-3">
             <div className="text-right">

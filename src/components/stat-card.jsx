@@ -39,12 +39,12 @@ export function StatCard({
         <p
           className={cn(
             "text-sm mb-1",
-            isPrimary ? "text-emerald-50" : "text-gray-500",
+            isPrimary ? "text-emerald-300" : "text-gray-500",
           )}
         >
           {title}
         </p>
-        <h3 className="text-3xl font-bold">{value}</h3>
+        <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
       </div>
 
       {/* Decorative background element for primary variant */}

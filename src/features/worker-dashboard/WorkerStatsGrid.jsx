@@ -6,7 +6,11 @@ export default function WorkerStatsGrid({ stats, worker }) {
       <StatCard
         title="Completed Jobs"
         value={String(stats?.completedRequests ?? 0)}
-        trend={`${stats?.completedRequests ? "Tracked from your requests" : "No completed jobs yet"}`}
+        trend={
+          stats?.completedRequests
+            ? "Tracked from your completed requests"
+            : "No completed jobs yet"
+        }
         icon={
           <svg
             className="h-5 w-5"
@@ -27,7 +31,7 @@ export default function WorkerStatsGrid({ stats, worker }) {
       <StatCard
         title="Active Jobs"
         value={String(stats?.acceptedRequests ?? 0)}
-        trend="Currently in progress"
+        trend="Accepted and ready to start"
         icon={
           <svg
             className="h-5 w-5"
@@ -46,10 +50,10 @@ export default function WorkerStatsGrid({ stats, worker }) {
       />
 
       <StatCard
-        title="Total Earnings"
-        value={`ETB ${Number(stats?.totalEarnings ?? 0).toLocaleString()}`}
+        title="Pending Requests"
+        value={String(stats?.pendingRequests ?? 0)}
         variant="primary"
-        trend="Based on completed requests"
+        trend="Waiting for your response"
         icon={
           <svg
             className="h-5 w-5"
@@ -61,7 +65,7 @@ export default function WorkerStatsGrid({ stats, worker }) {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         }
@@ -71,7 +75,7 @@ export default function WorkerStatsGrid({ stats, worker }) {
         title="Average Rating"
         value={
           <>
-            {worker?.rating?.toFixed(1) ?? "0.0"}{" "}
+            {(worker?.rating ?? 0).toFixed(1)}{" "}
             <span className="text-lg font-medium text-gray-400">/ 5</span>
           </>
         }

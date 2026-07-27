@@ -348,19 +348,26 @@ export async function getWorkerDashboardData() {
       (request) => request.status === "accepted",
     ).length,
 
+    inProgressRequests: requests.filter(
+      (request) => request.status === "in_progress",
+    ).length,
+
     completedRequests: requests.filter(
       (request) =>
         request.status === "completed" || request.status === "confirmed",
     ).length,
   };
 
+  const recentRequests = [...requests]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
+
   return {
     worker,
     stats,
-    recentRequests: requests.slice(0, 5),
+    recentRequests,
   };
 }
-
 /**
  * Returns worker portfolio.
  */
@@ -415,11 +422,6 @@ export async function getWorkerAnalyticsData() {
       request.status === "completed" || request.status === "confirmed",
   );
 
-  const totalEarnings = completedJobs.reduce(
-    (sum, request) => sum + Number(request.budget || 0),
-    0,
-  );
-
   const achievements = [
     {
       icon: "🏆",
@@ -459,7 +461,6 @@ export async function getWorkerAnalyticsData() {
     worker,
 
     stats: {
-      totalEarnings,
       completedJobs: completedJobs.length,
       averageRating: rating.rating,
       totalReviews: rating.totalReviews,
