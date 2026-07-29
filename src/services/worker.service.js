@@ -473,3 +473,23 @@ export async function getWorkerAnalyticsData() {
     },
   };
 }
+
+/**
+ * Returns worker portfolio data.
+ */
+export async function getWorkerPortfolioData() {
+  await delay();
+
+  const worker = await getCurrentWorker();
+
+  if (!worker) {
+    return null;
+  }
+
+  const portfolio = await getPortfolioByWorker(worker.id);
+
+  return {
+    worker,
+    portfolio,
+  };
+}

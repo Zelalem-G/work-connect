@@ -39,7 +39,7 @@ export async function updatePortfolioItem(itemId, updates) {
 }
 
 /**
- * Deletes a portfolio item.
+ * Deletes a portfolio item. 
  */
 export async function deletePortfolioItem(itemId) {
   await delay();

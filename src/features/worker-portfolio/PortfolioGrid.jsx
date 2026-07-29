@@ -1,7 +1,7 @@
 import { PortfolioImageCard } from "./PortfolioImageCard";
 import { EmptyPortfolioState } from "./EmptyPortfolioState";
 
-export function PortfolioGrid({ items = [] }) {
+export function PortfolioGrid({ items = [], onDelete }) {
   if (items.length === 0) {
     return <EmptyPortfolioState />;
   }
@@ -12,7 +12,7 @@ export function PortfolioGrid({ items = [] }) {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <PortfolioImageCard key={item.id} image={item.image} />
+          <PortfolioImageCard key={item.id} item={item} onDelete={onDelete} />
         ))}
       </div>
     </section>

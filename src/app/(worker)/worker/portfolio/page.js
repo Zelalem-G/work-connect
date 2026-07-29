@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 
+import { Card } from "@/components/card";
+import { PortfolioGrid } from "@/features/worker-portfolio/PortfolioGrid";
 import { PortfolioHeader } from "@/features/worker-portfolio/PortfolioHeader";
 import { UploadPortfolioCard } from "@/features/worker-portfolio/UploadPortfolioCard";
-import { PortfolioGrid } from "@/features/worker-portfolio/PortfolioGrid";
-import { Card } from "@/components/card";
-import { getCurrentWorker } from "@/services/worker.service";
+import { getWorkerPortfolioData } from "@/services/worker.service";
 import {
   createPortfolioItem,
-  getPortfolioByWorker,
+  deletePortfolioItem,
 } from "@/services/portfolio.service";
 
 export default function WorkerPortfolioPage() {
+  const [worker, setWorker] = useState(null);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,18 +26,18 @@ export default function WorkerPortfolioPage() {
       try {
         setLoading(true);
         setError("");
-        const worker = await getCurrentWorker();
 
-        if (!worker) {
+        const data = await getWorkerPortfolioData();
+
+        if (!data) {
           throw new Error(
-            "You need to be signed in as a worker to manage portfolio items.",
+            "You need to be signed in as a worker to manage your portfolio.",
           );
         }
 
-        const items = await getPortfolioByWorker(worker.id);
-
         if (mounted) {
-          setPortfolioItems(items);
+          setWorker(data.worker);
+          setPortfolioItems(data.portfolio);
         }
       } catch (err) {
         if (mounted) {
@@ -57,20 +58,13 @@ export default function WorkerPortfolioPage() {
   }, []);
 
   async function handleUpload(imageUrl) {
-    if (!imageUrl) {
+    if (!imageUrl || !worker) {
       return;
     }
 
     try {
       setSubmitting(true);
       setError("");
-      const worker = await getCurrentWorker();
-
-      if (!worker) {
-        throw new Error(
-          "You need to be signed in as a worker to add portfolio items.",
-        );
-      }
 
       const created = await createPortfolioItem({
         workerId: worker.id,
@@ -87,9 +81,21 @@ export default function WorkerPortfolioPage() {
     }
   }
 
+  async function handleDelete(itemId) {
+    try {
+      setError("");
+
+      await deletePortfolioItem(itemId);
+
+      setPortfolioItems((prev) => prev.filter((item) => item.id !== itemId));
+    } catch (err) {
+      setError(err.message || "Unable to delete this portfolio item.");
+    }
+  }
+
   return (
     <div className="space-y-8">
-      <PortfolioHeader />
+      <PortfolioHeader totalItems={portfolioItems.length} />
 
       <UploadPortfolioCard onUpload={handleUpload} submitting={submitting} />
 
@@ -102,7 +108,7 @@ export default function WorkerPortfolioPage() {
           {error}
         </Card>
       ) : (
-        <PortfolioGrid items={portfolioItems} />
+        <PortfolioGrid items={portfolioItems} onDelete={handleDelete} />
       )}
     </div>
   );
