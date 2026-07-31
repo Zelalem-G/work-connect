@@ -22,12 +22,22 @@ export async function getReviews() {
 }
 
 /**
- * Returns one review.
+ * Returns one review by its id.
  */
 export async function getReviewById(reviewId) {
   await delay();
 
   return findOne("reviews", (review) => review.id === reviewId);
+}
+
+/**
+ * Returns the review associated with a request.
+ * Returns null if the request has not been reviewed.
+ */
+export async function getReviewByRequest(requestId) {
+  await delay();
+
+  return findOne("reviews", (review) => review.requestId === requestId) ?? null;
 }
 
 /**
@@ -42,12 +52,23 @@ export async function getWorkerReviews(workerId) {
 }
 
 /**
- * Calculates a worker's average rating.
+ * Returns every review written by a customer.
  */
-export async function getWorkerRating(workerId) {
+export async function getCustomerReviews(customerId) {
   await delay();
 
-  const reviews = await getWorkerReviews(workerId);
+  return findMany("reviews", (review) => review.customerId === customerId).sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
+}
+
+/**
+ * Returns a worker's average rating and total review count.
+ */
+export async function getWorkerRatingSummary(workerId) {
+  await delay();
+
+  const reviews = findMany("reviews", (review) => review.workerId === workerId);
 
   if (!reviews.length) {
     return {
@@ -66,7 +87,25 @@ export async function getWorkerRating(workerId) {
 }
 
 /**
- * Creates a review.
+ * Returns whether a request has already been reviewed.
+ */
+export async function hasCustomerReviewed(requestId) {
+  await delay();
+
+  const review = findOne("reviews", (review) => review.requestId === requestId);
+
+  return !!review;
+}
+
+/**
+ * Creates a new review.
+ *
+ * Rules:
+ * - Only authenticated customers can create reviews.
+ * - The request must exist.
+ * - The request must belong to the current customer.
+ * - The request must be confirmed.
+ * - One review per request.
  */
 export async function createReview(data) {
   await delay();
@@ -77,15 +116,53 @@ export async function createReview(data) {
     throw new Error("Only customers can leave reviews.");
   }
 
+  const request = findOne(
+    "requests",
+    (request) => request.id === data.requestId,
+  );
+
+  if (!request) {
+    throw new Error("Request not found.");
+  }
+
+  if (request.customerId !== customer.id) {
+    throw new Error("You can only review your own requests.");
+  }
+
+  if (request.status !== "confirmed") {
+    throw new Error(
+      "Reviews can only be submitted after the job has been confirmed.",
+    );
+  }
+
+  const existingReview = findOne(
+    "reviews",
+    (review) => review.requestId === data.requestId,
+  );
+
+  if (existingReview) {
+    throw new Error("This request has already been reviewed.");
+  }
+
+  const rating = Number(data.rating);
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new Error("Rating must be between 1 and 5.");
+  }
+
+  const trimmedComment = data.comment?.trim();
+
   const review = {
     id: crypto.randomUUID(),
 
-    workerId: data.workerId,
+    requestId: request.id,
+
+    workerId: request.workerId,
     customerId: customer.id,
 
-    rating: data.rating,
+    rating,
 
-    comment: data.comment?.trim() ?? "",
+    comment: trimmedComment ? trimmedComment : null,
 
     createdAt: new Date().toISOString(),
   };
@@ -94,12 +171,36 @@ export async function createReview(data) {
 }
 
 /**
- * Updates a review.
+ * Updates an existing review.
  */
 export async function updateReview(reviewId, updates) {
   await delay();
 
-  return updateOne("reviews", (review) => review.id === reviewId, updates);
+  const review = findOne("reviews", (review) => review.id === reviewId);
+
+  if (!review) {
+    throw new Error("Review not found.");
+  }
+
+  const payload = {};
+
+  if (updates.rating !== undefined) {
+    const rating = Number(updates.rating);
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      throw new Error("Rating must be between 1 and 5.");
+    }
+
+    payload.rating = rating;
+  }
+
+  if (updates.comment !== undefined) {
+    const trimmedComment = updates.comment?.trim();
+
+    payload.comment = trimmedComment ? trimmedComment : null;
+  }
+
+  return updateOne("reviews", (review) => review.id === reviewId, payload);
 }
 
 /**
