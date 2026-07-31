@@ -23,6 +23,7 @@ export default function CustomerProfilePage() {
       try {
         setLoading(true);
         setError("");
+
         const data = await getCustomerProfileData();
 
         if (mounted) {
@@ -50,12 +51,26 @@ export default function CustomerProfilePage() {
   const stats = profileData?.stats;
   const favoriteWorkers = profileData?.favoriteWorkers || [];
 
+  function handleCustomerUpdated(updatedCustomer) {
+    setProfileData((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        customer: {
+          ...current.customer,
+          ...updatedCustomer,
+          name: updatedCustomer.fullName,
+          avatar: updatedCustomer.profileImage || current.customer.avatar,
+        },
+      };
+    });
+  }
+
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-
       <div>
-        <h1 className="text-3xl font-extrabold text-[#1A362D] tracking-tight">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#1A362D]">
           My Profile
         </h1>
 
@@ -64,8 +79,6 @@ export default function CustomerProfilePage() {
           workers.
         </p>
       </div>
-
-      {/* Profile Hero */}
 
       {loading ? (
         <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
@@ -79,20 +92,17 @@ export default function CustomerProfilePage() {
         <>
           <ProfileHeader customer={customer} />
 
-          {/* Main Content */}
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left */}
-
-            <div className="lg:col-span-8 space-y-6">
-              <PersonalInfoCard customer={customer} />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+              <PersonalInfoCard
+                customer={customer}
+                onCustomerUpdated={handleCustomerUpdated}
+              />
 
               <SecurityCard />
             </div>
 
-            {/* Right */}
-
-            <div className="lg:col-span-4 space-y-6">
+            <div className="space-y-6 lg:col-span-4">
               <AccountStats stats={stats} />
 
               <FavoritesCard workers={favoriteWorkers} />

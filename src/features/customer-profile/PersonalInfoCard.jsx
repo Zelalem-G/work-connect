@@ -1,11 +1,88 @@
+"use client";
+
+import { useState } from "react";
+
 import { Card } from "@/components/card";
+import { Button } from "@/components/button";
 
-export default function PersonalInfoCard({ customer }) {
+import { updateCustomer } from "@/services/customer.service";
+import { validateSchema } from "@/validation/helpers";
+import { customerProfileSchema } from "@/validation/customer/profile";
+
+export default function PersonalInfoCard({ customer, onCustomerUpdated }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [formData, setFormData] = useState(() => ({
+    fullName: customer.fullName || customer.name || "",
+    email: customer.email || "",
+    phone: customer.phone || "",
+    city: customer.city || "",
+    address: customer.address || "",
+  }));
+
+  const [errors, setErrors] = useState({});
+  const [saveError, setSaveError] = useState("");
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    if (errors[name]) {
+      setErrors((current) => ({
+        ...current,
+        [name]: "",
+      }));
+    }
+  }
+
+  function handleCancel() {
+    setFormData({
+      fullName: customer.fullName || customer.name || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      city: customer.city || "",
+      address: customer.address || "",
+    });
+
+    setErrors({});
+    setSaveError("");
+    setIsEditing(false);
+  }
+
+  async function handleSave() {
+    const validation = await validateSchema(customerProfileSchema, formData);
+
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setErrors({});
+      setSaveError("");
+
+      const updatedCustomer = await updateCustomer(formData);
+
+      if (updatedCustomer) {
+        onCustomerUpdated(updatedCustomer);
+        setIsEditing(false);
+      }
+    } catch (error) {
+      setSaveError(error.message || "Failed to update your profile.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
-    <Card>
-      <div className="space-y-6">
-        {/* Header */}
-
+    <Card className="p-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-[#1A362D]">
             Personal Information
@@ -16,13 +93,31 @@ export default function PersonalInfoCard({ customer }) {
           </p>
         </div>
 
-        <div className="h-px bg-gray-100" />
+        {isEditing ? (
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={handleCancel} disabled={isSaving}>
+              Cancel
+            </Button>
 
-        {/* Form */}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="secondary" onClick={() => setIsEditing(true)}>
+            Edit
+          </Button>
+        )}
+      </div>
 
+      {saveError && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {saveError}
+        </div>
+      )}
+
+      <div className="space-y-5">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* Name */}
-
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
               Full Name
@@ -30,12 +125,21 @@ export default function PersonalInfoCard({ customer }) {
 
             <input
               type="text"
-              defaultValue={customer.name}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D]"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              readOnly={!isEditing}
+              className={`w-full rounded-xl border px-4 py-3 outline-none ${
+                isEditing
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              }`}
             />
-          </div>
 
-          {/* Email */}
+            {errors.fullName && (
+              <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>
+            )}
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -44,12 +148,21 @@ export default function PersonalInfoCard({ customer }) {
 
             <input
               type="email"
-              defaultValue={customer.email}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D]"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              readOnly={!isEditing}
+              className={`w-full rounded-xl border px-4 py-3 outline-none ${
+                isEditing
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              }`}
             />
-          </div>
 
-          {/* Phone */}
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -58,12 +171,21 @@ export default function PersonalInfoCard({ customer }) {
 
             <input
               type="text"
-              defaultValue={customer.phone}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D]"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              readOnly={!isEditing}
+              className={`w-full rounded-xl border px-4 py-3 outline-none ${
+                isEditing
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              }`}
             />
-          </div>
 
-          {/* City */}
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+            )}
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -72,13 +194,22 @@ export default function PersonalInfoCard({ customer }) {
 
             <input
               type="text"
-              defaultValue={customer.city}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D]"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              readOnly={!isEditing}
+              className={`w-full rounded-xl border px-4 py-3 outline-none ${
+                isEditing
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-200 bg-gray-50"
+              }`}
             />
+
+            {errors.city && (
+              <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+            )}
           </div>
         </div>
-
-        {/* Address */}
 
         <div>
           <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -87,17 +218,20 @@ export default function PersonalInfoCard({ customer }) {
 
           <textarea
             rows={4}
-            defaultValue={customer.address}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D]"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            readOnly={!isEditing}
+            className={`w-full resize-none rounded-xl border px-4 py-3 outline-none ${
+              isEditing
+                ? "border-gray-300 bg-white"
+                : "border-gray-200 bg-gray-50"
+            }`}
           />
-        </div>
 
-        {/* Save */}
-
-        <div>
-          <button className="rounded-xl bg-[#E8F5F1] px-6 py-3 font-semibold text-[#1A362D] transition hover:opacity-90">
-            Save Changes
-          </button>
+          {errors.address && (
+            <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+          )}
         </div>
       </div>
     </Card>
