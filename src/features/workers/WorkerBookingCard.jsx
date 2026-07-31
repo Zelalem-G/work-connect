@@ -94,7 +94,9 @@ export default function WorkerBookingCard({ worker }) {
             <p className="font-medium text-gray-900">Experience</p>
 
             <p className="text-sm text-gray-500">
-              {worker.experience} {worker.experience === 1 ? "year" : "years"}
+              {console.log(worker)}
+              {worker.yearsExperience}{" "}
+              {worker.yearsExperience === 1 ? "year" : "years"}
             </p>
           </div>
         </div>

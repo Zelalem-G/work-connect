@@ -16,11 +16,11 @@ export const workerProfiles = [
 
     verified: true,
 
-    completedJobs: 124,
+    completedJobs: 12,
 
     rating: 4.9,
 
-    totalReviews: 98,
+    totalReviews: 2,
 
     serviceAreas: ["Addis Ababa", "Bole", "CMC", "Lebu", "Summit"],
 

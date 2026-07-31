@@ -11,7 +11,7 @@ import WorkerPortfolio from "@/features/workers/WorkerPortfolio";
 import WorkerServiceArea from "@/features/workers/WorkerServiceArea";
 import { Card } from "@/components/card";
 import { getWorkerProfileData } from "@/services/worker.service";
-import { getWorkerReviews } from "@/services/review.service";
+import { getWorkerReviewsWithSummary } from "@/services/review.service";
 
 function toReviewViewModel(review) {
   const date = review.createdAt
@@ -24,20 +24,38 @@ function toReviewViewModel(review) {
 
   return {
     id: review.id,
-    initials: review.customerId?.slice(0, 2).toUpperCase() || "CU",
-    name: review.customerId || "Verified customer",
+
+    initials: review.customerInitials,
+
+    name: review.customerName,
+
+    profileImage: review.customerProfileImage,
+
     date,
+
     project: "Service completed",
-    rating: review.rating || 0,
-    comment: review.comment || "The customer left a short review.",
+
+    rating: review.rating,
+
+    comment:
+      review.comment ?? "The customer left a rating without a written review.",
   };
 }
 
 export default function WorkerProfilePage() {
   const params = useParams();
   const workerId = params?.workerId;
+
   const [profile, setProfile] = useState(null);
-  const [reviews, setReviews] = useState([]);
+
+  const [reviewData, setReviewData] = useState({
+    rating: {
+      rating: 0,
+      totalReviews: 0,
+    },
+    reviews: [],
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -45,29 +63,27 @@ export default function WorkerProfilePage() {
     let mounted = true;
 
     async function loadWorkerProfile() {
-      if (!workerId) {
-        return;
-      }
+      if (!workerId) return;
 
       try {
         setLoading(true);
         setError("");
 
-        const [workerProfile, workerReviews] = await Promise.all([
+        const [workerProfile, reviews] = await Promise.all([
           getWorkerProfileData(workerId),
-          getWorkerReviews(workerId),
+          getWorkerReviewsWithSummary(workerId),
         ]);
 
-        if (mounted) {
-          setProfile(workerProfile);
-          setReviews(workerReviews);
-        }
+        if (!mounted) return;
+
+        setProfile(workerProfile);
+        setReviewData(reviews);
       } catch (err) {
-        if (mounted) {
-          setError(
-            err.message || "Unable to load this worker profile right now.",
-          );
-        }
+        if (!mounted) return;
+
+        setError(
+          err.message || "Unable to load this worker profile right now.",
+        );
       } finally {
         if (mounted) {
           setLoading(false);
@@ -87,44 +103,61 @@ export default function WorkerProfilePage() {
       return null;
     }
 
-    const ratingData = profile.rating || {
-      rating: profile.worker.rating || 0,
-      totalReviews: profile.worker.totalReviews || reviews.length,
-    };
-
     return {
       id: profile.worker.id,
+
       name: profile.worker.fullName,
+
       title: profile.worker.primarySkill || "Skilled professional",
+
       image: profile.worker.profileImage || "/api/placeholder/300/300",
+
       verified: profile.worker.verified,
+
       available: profile.worker.availability === "available",
-      rating: ratingData.rating || 0,
-      reviewCount: ratingData.totalReviews || reviews.length,
+
+      rating: reviewData.rating.rating,
+
+      reviewCount: reviewData.rating.totalReviews,
+
       location: `${profile.worker.city || "Addis Ababa"}, ET`,
+
       price: "100 ETB /hr",
+
       yearsExperience: `${profile.worker.experience || 0}+`,
+
       completedJobs: profile.worker.completedJobs || 0,
+
       successRate: `${profile.worker.responseRate || 0}%`,
+
       activeJobs: 0,
+
       responseTime: "Usually responds within 2 hours",
+
       availability:
         profile.worker.availability === "available"
           ? "Available now"
           : "Busy right now",
-      serviceArea: (profile.worker.serviceAreas || [
-        profile.worker.city || "Addis Ababa",
-      ])[0],
+
+      serviceArea:
+        profile.worker.serviceAreas?.[0] ||
+        profile.worker.city ||
+        "Addis Ababa",
+
       workType: "On-Site",
+
       skills: profile.worker.skills || [],
+
       about: [
         profile.worker.bio ||
           "This professional is ready to help with your next project.",
       ],
+
       portfolio: (profile.portfolio || []).map((item) => item.image),
-      reviews: (reviews || []).map(toReviewViewModel),
+
+      reviews: reviewData.reviews.map(toReviewViewModel),
     };
-  }, [profile, reviews]);
+  }, [profile, reviewData]);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -143,7 +176,7 @@ export default function WorkerProfilePage() {
       ) : !worker ? (
         <div className="lg:col-span-12">
           <Card className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-            No worker profile found for this request.
+            No worker profile found.
           </Card>
         </div>
       ) : (

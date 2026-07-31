@@ -11,14 +11,43 @@ import {
 } from "./storage.service";
 
 /**
+ * Builds a review object with customer information.
+ */
+function buildReview(review) {
+  const customer = findOne(
+    "users",
+    (user) => user.id === review.customerId && user.role === "customer",
+  );
+
+  const fullName = customer?.fullName || "Verified Customer";
+
+  const initials = fullName
+    .split(" ")
+    .map((name) => name[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return {
+    ...review,
+
+    customerName: fullName,
+
+    customerInitials: initials,
+
+    customerProfileImage: customer?.profileImage || "",
+  };
+}
+
+/**
  * Returns every review.
  */
 export async function getReviews() {
   await delay();
 
-  return findMany("reviews").sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
+  return findMany("reviews")
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(buildReview);
 }
 
 /**
@@ -27,17 +56,20 @@ export async function getReviews() {
 export async function getReviewById(reviewId) {
   await delay();
 
-  return findOne("reviews", (review) => review.id === reviewId);
+  const review = findOne("reviews", (review) => review.id === reviewId);
+
+  return review ? buildReview(review) : null;
 }
 
 /**
  * Returns the review associated with a request.
- * Returns null if the request has not been reviewed.
  */
 export async function getReviewByRequest(requestId) {
   await delay();
 
-  return findOne("reviews", (review) => review.requestId === requestId) ?? null;
+  const review = findOne("reviews", (review) => review.requestId === requestId);
+
+  return review ? buildReview(review) : null;
 }
 
 /**
@@ -46,9 +78,9 @@ export async function getReviewByRequest(requestId) {
 export async function getWorkerReviews(workerId) {
   await delay();
 
-  return findMany("reviews", (review) => review.workerId === workerId).sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
+  return findMany("reviews", (review) => review.workerId === workerId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(buildReview);
 }
 
 /**
@@ -57,13 +89,13 @@ export async function getWorkerReviews(workerId) {
 export async function getCustomerReviews(customerId) {
   await delay();
 
-  return findMany("reviews", (review) => review.customerId === customerId).sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  );
+  return findMany("reviews", (review) => review.customerId === customerId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(buildReview);
 }
 
 /**
- * Returns a worker's average rating and total review count.
+ * Returns a worker's average rating and review count.
  */
 export async function getWorkerRatingSummary(workerId) {
   await delay();
@@ -87,25 +119,58 @@ export async function getWorkerRatingSummary(workerId) {
 }
 
 /**
+ * Compatibility wrapper.
+ */
+export async function getWorkerRating(workerId) {
+  return getWorkerRatingSummary(workerId);
+}
+
+/**
+ * Returns worker reviews together with rating summary.
+ */
+export async function getWorkerReviewsWithSummary(workerId) {
+  await delay();
+
+  const reviews = findMany(
+    "reviews",
+    (review) => review.workerId === workerId,
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const enrichedReviews = reviews.map(buildReview);
+
+  if (!reviews.length) {
+    return {
+      rating: {
+        rating: 0,
+        totalReviews: 0,
+      },
+      reviews: [],
+    };
+  }
+
+  const average =
+    reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+
+  return {
+    rating: {
+      rating: Number(average.toFixed(1)),
+      totalReviews: reviews.length,
+    },
+    reviews: enrichedReviews,
+  };
+}
+
+/**
  * Returns whether a request has already been reviewed.
  */
 export async function hasCustomerReviewed(requestId) {
   await delay();
 
-  const review = findOne("reviews", (review) => review.requestId === requestId);
-
-  return !!review;
+  return !!findOne("reviews", (review) => review.requestId === requestId);
 }
 
 /**
  * Creates a new review.
- *
- * Rules:
- * - Only authenticated customers can create reviews.
- * - The request must exist.
- * - The request must belong to the current customer.
- * - The request must be confirmed.
- * - One review per request.
  */
 export async function createReview(data) {
   await delay();
@@ -135,12 +200,7 @@ export async function createReview(data) {
     );
   }
 
-  const existingReview = findOne(
-    "reviews",
-    (review) => review.requestId === data.requestId,
-  );
-
-  if (existingReview) {
+  if (findOne("reviews", (review) => review.requestId === data.requestId)) {
     throw new Error("This request has already been reviewed.");
   }
 
@@ -162,12 +222,12 @@ export async function createReview(data) {
 
     rating,
 
-    comment: trimmedComment ? trimmedComment : null,
+    comment: trimmedComment || null,
 
     createdAt: new Date().toISOString(),
   };
 
-  return insertOne("reviews", review);
+  return buildReview(insertOne("reviews", review));
 }
 
 /**
@@ -197,10 +257,16 @@ export async function updateReview(reviewId, updates) {
   if (updates.comment !== undefined) {
     const trimmedComment = updates.comment?.trim();
 
-    payload.comment = trimmedComment ? trimmedComment : null;
+    payload.comment = trimmedComment || null;
   }
 
-  return updateOne("reviews", (review) => review.id === reviewId, payload);
+  const updatedReview = updateOne(
+    "reviews",
+    (review) => review.id === reviewId,
+    payload,
+  );
+
+  return buildReview(updatedReview);
 }
 
 /**

@@ -1,14 +1,30 @@
-export default function WorkerReviews({ reviews }) {
+export default function WorkerReviews({ reviews = [] }) {
+  if (!reviews.length) {
+    return (
+      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <h2 className="mb-6 text-xl font-bold text-gray-900">
+          Client Experiences
+        </h2>
+
+        <div className="rounded-xl border border-dashed border-gray-200 py-10 text-center">
+          <p className="text-gray-500">
+            No reviews yet. This worker has not received any customer reviews.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
       {/* Header */}
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900">Client Experiences</h2>
 
-        <button className="font-medium text-[#1A362D] transition hover:opacity-80">
-          View All Reviews
-        </button>
+        <p className="mt-1 text-sm text-gray-500">
+          {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+        </p>
       </div>
 
       {/* Reviews */}
@@ -21,13 +37,21 @@ export default function WorkerReviews({ reviews }) {
           >
             {/* Top */}
 
-            <div className="flex items-start justify-between">
+            <div className="flex items-center justify-between">
               <div className="flex gap-4">
                 {/* Avatar */}
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A362D] font-semibold text-white">
-                  {review.initials}
-                </div>
+                {review.profileImage ? (
+                  <img
+                    src={review.profileImage}
+                    alt={review.name}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A362D] font-semibold text-white">
+                    {review.initials}
+                  </div>
+                )}
 
                 {/* Info */}
 
@@ -40,11 +64,18 @@ export default function WorkerReviews({ reviews }) {
                 </div>
               </div>
 
-              {/* Stars */}
+              {/* Rating */}
 
               <div className="flex gap-1">
-                {[...Array(review.rating)].map((_, index) => (
-                  <span key={index} className="text-yellow-500">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={
+                      star <= review.rating
+                        ? "text-yellow-500"
+                        : "text-gray-300"
+                    }
+                  >
                     ★
                   </span>
                 ))}
@@ -53,7 +84,9 @@ export default function WorkerReviews({ reviews }) {
 
             {/* Comment */}
 
-            <p className="mt-4 leading-7 text-gray-600">{review.comment}</p>
+            {review.comment && (
+              <p className="mt-4 leading-7 text-gray-600">{review.comment}</p>
+            )}
           </div>
         ))}
       </div>
