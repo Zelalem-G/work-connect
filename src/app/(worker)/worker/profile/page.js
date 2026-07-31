@@ -9,10 +9,8 @@ import { PortfolioCard } from "@/features/worker-profile/PortfolioCard";
 import { SecurityCard } from "@/features/worker-profile/SecurityCard";
 import { DangerZoneCard } from "@/features/worker-profile/DangerZoneCard";
 import { Card } from "@/components/card";
-import {
-  getCurrentWorker,
-  getWorkerProfileData,
-} from "@/services/worker.service";
+
+import { getCurrentWorkerProfileData } from "@/services/worker.service";
 
 export default function WorkerProfilePage() {
   const [worker, setWorker] = useState(null);
@@ -28,19 +26,17 @@ export default function WorkerProfilePage() {
         setLoading(true);
         setError("");
 
-        const currentWorker = await getCurrentWorker();
+        const profileData = await getCurrentWorkerProfileData();
 
-        if (!currentWorker) {
+        if (!profileData) {
           throw new Error(
             "You need to be signed in as a worker to view this profile.",
           );
         }
 
-        const profileData = await getWorkerProfileData(currentWorker.id);
-
         if (mounted) {
-          setWorker(profileData?.worker || currentWorker);
-          setPortfolioItems(profileData?.portfolio || []);
+          setWorker(profileData.worker);
+          setPortfolioItems(profileData.portfolio);
         }
       } catch (err) {
         if (mounted) {
@@ -110,8 +106,15 @@ export default function WorkerProfilePage() {
           <WorkerProfileHeader worker={profileData} />
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <AccountInformationCard worker={profileData} />
-            <ProfessionalProfileCard worker={profileData} />
+            <AccountInformationCard
+              worker={profileData}
+              onWorkerUpdated={setWorker}
+            />
+
+            <ProfessionalProfileCard
+              worker={profileData}
+              onWorkerUpdated={setWorker}
+            />
           </div>
 
           <PortfolioCard portfolioCount={profileData.portfolioCount} />

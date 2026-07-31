@@ -493,3 +493,37 @@ export async function getWorkerPortfolioData() {
     portfolio,
   };
 }
+
+/**
+ * Returns all data required for the worker profile page.
+ */
+export async function getCurrentWorkerProfileData() {
+  await delay();
+
+  const worker = await getCurrentWorker();
+
+  if (!worker) {
+    return null;
+  }
+
+  const [portfolio, rating] = await Promise.all([
+    getPortfolioByWorker(worker.id),
+    getWorkerRating(worker.id),
+  ]);
+
+  return {
+    worker: {
+      ...worker,
+      rating: rating.rating,
+      totalReviews: rating.totalReviews,
+    },
+
+    portfolio,
+
+    stats: {
+      portfolioCount: portfolio.length,
+      rating: rating.rating,
+      totalReviews: rating.totalReviews,
+    },
+  };
+}
