@@ -16,7 +16,7 @@ export default function WorkerSummaryCard({ worker }) {
         {/* Info */}
 
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-900">{worker.fullName}</h2>
+          <h2 className="text-xl font-bold text-gray-900">{worker.name}</h2>
 
           <p className="mt-1 text-gray-500">{worker.title}</p>
 
@@ -30,16 +30,19 @@ export default function WorkerSummaryCard({ worker }) {
             <div className="flex items-center gap-1 text-sm">
               <span className="text-yellow-500">★</span>
 
-              <span className="font-medium">{worker.rating}</span>
+              <span className="font-medium">
+                {Number(worker.rating).toFixed(1)}
+              </span>
 
               <span className="text-gray-500">
-                ({worker.reviewCount} reviews)
+                ({worker.reviewCount}{" "}
+                {worker.reviewCount === 1 ? "review" : "reviews"})
               </span>
             </div>
           </div>
         </div>
 
-        {/* Small Verification */}
+        {/* Verification */}
 
         <div className="hidden sm:flex">
           <div className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
