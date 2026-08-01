@@ -1,6 +1,6 @@
 "use client";
 
-export default function RequestForm({ formData, setFormData }) {
+export default function RequestForm({ formData, setFormData, errors = {} }) {
   function handleChange(e) {
     const { name, value } = e.target;
 
@@ -32,8 +32,16 @@ export default function RequestForm({ formData, setFormData }) {
           value={formData.title}
           onChange={handleChange}
           placeholder="Enter the title of the issue"
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+          className={`w-full rounded-xl bg-gray-50 px-4 py-3 outline-none transition focus:bg-white ${
+            errors.title
+              ? "border border-red-500 focus:border-red-500"
+              : "border border-gray-200 focus:border-[#1A362D]"
+          }`}
         />
+
+        {errors.title && (
+          <p className="mt-2 text-sm text-red-600">{errors.title}</p>
+        )}
       </div>
 
       {/* Description */}
@@ -49,12 +57,20 @@ export default function RequestForm({ formData, setFormData }) {
           value={formData.description}
           onChange={handleChange}
           placeholder="Briefly explain what you need help with (e.g. leaking faucet, wiring installation, furniture assembly...)"
-          className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+          className={`w-full resize-none rounded-xl bg-gray-50 px-4 py-3 outline-none transition focus:bg-white ${
+            errors.description
+              ? "border border-red-500 focus:border-red-500"
+              : "border border-gray-200 focus:border-[#1A362D]"
+          }`}
         />
 
-        <p className="mt-2 text-sm text-gray-500">
-          Include as many details as possible for a more accurate quote.
-        </p>
+        {errors.description ? (
+          <p className="mt-2 text-sm text-red-600">{errors.description}</p>
+        ) : (
+          <p className="mt-2 text-sm text-gray-500">
+            Include as many details as possible for a more accurate quote.
+          </p>
+        )}
       </div>
 
       {/* Row */}
@@ -95,9 +111,17 @@ export default function RequestForm({ formData, setFormData }) {
               value={formData.location}
               onChange={handleChange}
               placeholder="City, Area or Street"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 outline-none transition focus:border-[#1A362D] focus:bg-white"
+              className={`w-full rounded-xl bg-gray-50 py-3 pl-12 pr-4 outline-none transition focus:bg-white ${
+                errors.location
+                  ? "border border-red-500 focus:border-red-500"
+                  : "border border-gray-200 focus:border-[#1A362D]"
+              }`}
             />
           </div>
+
+          {errors.location && (
+            <p className="mt-2 text-sm text-red-600">{errors.location}</p>
+          )}
         </div>
 
         {/* Date */}
@@ -127,9 +151,17 @@ export default function RequestForm({ formData, setFormData }) {
               name="date"
               value={formData.date}
               onChange={handleChange}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-4 outline-none transition focus:border-[#1A362D] focus:bg-white"
+              className={`w-full rounded-xl bg-gray-50 py-3 pl-12 pr-4 outline-none transition focus:bg-white ${
+                errors.date
+                  ? "border border-red-500 focus:border-red-500"
+                  : "border border-gray-200 focus:border-[#1A362D]"
+              }`}
             />
           </div>
+
+          {errors.date && (
+            <p className="mt-2 text-sm text-red-600">{errors.date}</p>
+          )}
         </div>
       </div>
 
@@ -147,8 +179,16 @@ export default function RequestForm({ formData, setFormData }) {
           value={formData.budget}
           onChange={handleChange}
           placeholder="Flexible or enter an estimated budget"
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#1A362D] focus:bg-white"
+          className={`w-full rounded-xl bg-gray-50 px-4 py-3 outline-none transition focus:bg-white ${
+            errors.budget
+              ? "border border-red-500 focus:border-red-500"
+              : "border border-gray-200 focus:border-[#1A362D]"
+          }`}
         />
+
+        {errors.budget && (
+          <p className="mt-2 text-sm text-red-600">{errors.budget}</p>
+        )}
       </div>
 
       {/* Photos */}
@@ -159,7 +199,13 @@ export default function RequestForm({ formData, setFormData }) {
           <span className="ml-2 text-gray-400">(Optional)</span>
         </label>
 
-        <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-10 transition hover:border-[#1A362D] hover:bg-white">
+        <label
+          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-gray-50 px-6 py-10 transition hover:bg-white ${
+            errors.photos
+              ? "border-red-500"
+              : "border-gray-300 hover:border-[#1A362D]"
+          }`}
+        >
           <svg
             className="mb-4 h-10 w-10 text-gray-400"
             fill="none"
@@ -192,6 +238,10 @@ export default function RequestForm({ formData, setFormData }) {
             className="hidden"
           />
         </label>
+
+        {errors.photos && (
+          <p className="mt-2 text-sm text-red-600">{errors.photos}</p>
+        )}
       </div>
     </div>
   );

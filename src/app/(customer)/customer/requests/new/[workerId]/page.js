@@ -9,8 +9,9 @@ import RequestForm from "@/features/requests/RequestForm";
 import RequestSummary from "@/features/requests/RequestSummary";
 import RequestActions from "@/features/requests/RequestActions";
 import { Card } from "@/components/card";
-import { getWorkerById } from "@/services/worker.service";
+import { getWorkerProfileData } from "@/services/worker.service";
 import { createRequest } from "@/services/request.service";
+import { requestSchema } from "@/validation/customer/requestSchema";
 
 export default function RequestServicePage() {
   const params = useParams();
@@ -18,8 +19,13 @@ export default function RequestServicePage() {
   const workerId = params?.workerId;
 
   const [worker, setWorker] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,6 +34,7 @@ export default function RequestServicePage() {
     budget: "",
     photos: [],
   });
+
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -41,15 +48,24 @@ export default function RequestServicePage() {
       try {
         setLoading(true);
         setError("");
-        const data = await getWorkerById(workerId);
 
-        if (mounted) {
-          setWorker(data);
+        const data = await getWorkerProfileData(workerId);
+
+        if (!mounted) {
+          return;
         }
+
+        setWorker({
+          ...data.worker,
+          rating: data.rating.rating,
+          totalReviews: data.rating.totalReviews,
+        });
       } catch (err) {
-        if (mounted) {
-          setError(err.message || "Unable to load this worker right now.");
+        if (!mounted) {
+          return;
         }
+
+        setError(err.message || "Unable to load this worker right now.");
       } finally {
         if (mounted) {
           setLoading(false);
@@ -67,9 +83,11 @@ export default function RequestServicePage() {
   const requestPreview = useMemo(
     () => ({
       location: formData.location || "Not specified",
+
       preferredDate: formData.date
         ? new Date(formData.date).toLocaleString()
         : "Not selected",
+
       budget: formData.budget || "Flexible",
     }),
     [formData],
@@ -85,22 +103,50 @@ export default function RequestServicePage() {
 
     try {
       setSubmitting(true);
+
       setError("");
+
+      setErrors({});
+
+      await requestSchema.validate(formData, {
+        abortEarly: false,
+      });
 
       await createRequest({
         workerId,
+
         title: formData.title,
+
         description: formData.description,
+
         location: formData.location,
+
         date: formData.date,
+
         preferredDate: formData.date?.split("T")[0] || null,
+
         preferredTime: formData.date?.split("T")[1] || null,
+
         budget: formData.budget,
+
         photos: formData.photos,
       });
 
       router.push("/customer/dashboard");
     } catch (err) {
+      if (err.inner) {
+        const validationErrors = {};
+
+        err.inner.forEach((error) => {
+          if (!validationErrors[error.path]) {
+            validationErrors[error.path] = error.message;
+          }
+        });
+
+        setErrors(validationErrors);
+        return;
+      }
+
       setError(err.message || "Unable to submit your request right now.");
     } finally {
       setSubmitting(false);
@@ -114,11 +160,17 @@ export default function RequestServicePage() {
 
     return {
       id: worker.id,
+
       name: worker.fullName,
+
       title: worker.primarySkill || "Skilled professional",
+
       image: worker.profileImage || "/api/placeholder/150/150",
+
       rating: worker.rating || 0,
+
       reviewCount: worker.totalReviews || 0,
+
       badge: worker.verified ? "Top Rated" : "Verified",
     };
   }, [worker]);
@@ -145,6 +197,7 @@ export default function RequestServicePage() {
                 worker={requestWorker}
                 formData={formData}
                 setFormData={setFormData}
+                errors={errors}
               />
             </div>
 
