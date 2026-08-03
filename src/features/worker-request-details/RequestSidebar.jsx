@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
-import ProjectLocationCard from "./ProjectLocationCard";
 import ProjectPhotosCard from "./ProjectPhotosCard";
+import RequestReviewCard from "./RequestReviewCard";
 
 import {
   acceptRequest,
@@ -14,7 +14,7 @@ import {
   completeRequest,
 } from "@/services/request.service";
 
-export default function RequestSidebar({ request, onRequestUpdated }) {
+export default function RequestSidebar({ request, review, onRequestUpdated }) {
   const [submitting, setSubmitting] = useState(false);
 
   async function handleAction(action) {
@@ -134,7 +134,7 @@ export default function RequestSidebar({ request, onRequestUpdated }) {
 
   return (
     <div className="space-y-6">
-      <ProjectLocationCard request={request} />
+      {review && <RequestReviewCard review={review} />}
 
       <ProjectPhotosCard request={request} />
 

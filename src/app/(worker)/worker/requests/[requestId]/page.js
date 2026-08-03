@@ -11,6 +11,7 @@ import ProjectPhotosCard from "@/features/worker-request-details/ProjectPhotosCa
 import RequestSidebar from "@/features/worker-request-details/RequestSidebar";
 import { Card } from "@/components/card";
 import { getWorkerRequestDetails } from "@/services/request.service";
+import { getReviewByRequest } from "@/services/review.service";
 
 export default function WorkerRequestDetailsPage() {
   const params = useParams();
@@ -18,6 +19,8 @@ export default function WorkerRequestDetailsPage() {
 
   const [request, setRequest] = useState(null);
   const [customer, setCustomer] = useState(null);
+  const [review, setReview] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,11 +33,15 @@ export default function WorkerRequestDetailsPage() {
       if (!data) {
         setRequest(null);
         setCustomer(null);
+        setReview(null);
         return;
       }
 
+      const requestReview = await getReviewByRequest(data.request.id);
+
       setRequest(data.request);
       setCustomer(data.customer);
+      setReview(requestReview);
     } catch (err) {
       setError(err.message || "Unable to load this request right now.");
     }
@@ -57,11 +64,17 @@ export default function WorkerRequestDetailsPage() {
         if (!data) {
           setRequest(null);
           setCustomer(null);
+          setReview(null);
           return;
         }
 
+        const requestReview = await getReviewByRequest(data.request.id);
+
+        if (cancelled) return;
+
         setRequest(data.request);
         setCustomer(data.customer);
+        setReview(requestReview);
       } catch (err) {
         if (!cancelled) {
           setError(err.message || "Unable to load this request right now.");
@@ -173,13 +186,15 @@ export default function WorkerRequestDetailsPage() {
 
           <RequestDetailsCard request={request} />
 
-          <ProjectLocationCard request={request} />
-
           <ProjectPhotosCard request={request} />
         </div>
 
         <div className="lg:col-span-4">
-          <RequestSidebar request={request} onRequestUpdated={loadRequest} />
+          <RequestSidebar
+            request={request}
+            review={review}
+            onRequestUpdated={loadRequest}
+          />
         </div>
       </div>
     </div>

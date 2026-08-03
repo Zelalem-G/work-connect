@@ -1,16 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Card } from "@/components/card";
+import LeaveReviewCard from "./LeaveReviewCard";
+
 import { cancelRequest, confirmCompletion } from "@/services/request.service";
+
+import { hasCustomerReviewed } from "@/services/review.service";
 
 export default function RequestActions({
   requestId,
+  workerId,
   status,
   onRequestUpdated,
 }) {
   const [loadingAction, setLoadingAction] = useState(null);
+  const [reviewExists, setReviewExists] = useState(false);
+  const [checkingReview, setCheckingReview] = useState(false);
+
+  useEffect(() => {
+    async function checkReview() {
+      if (status !== "CONFIRMED") return;
+
+      try {
+        setCheckingReview(true);
+
+        const exists = await hasCustomerReviewed(requestId);
+
+        setReviewExists(exists);
+      } finally {
+        setCheckingReview(false);
+      }
+    }
+
+    checkReview();
+  }, [requestId, status]);
 
   async function handleCancel() {
     const confirmed = window.confirm(
@@ -52,6 +77,12 @@ export default function RequestActions({
     }
   }
 
+  async function handleReviewSubmitted() {
+    setReviewExists(true);
+
+    await onRequestUpdated?.();
+  }
+
   return (
     <Card>
       <h3 className="text-lg font-bold text-[#1A362D]">Quick Actions</h3>
@@ -79,31 +110,45 @@ export default function RequestActions({
         )}
 
         {status === "COMPLETED" && (
-          <>
-            <button
-              type="button"
-              onClick={handleConfirmCompletion}
-              disabled={loadingAction !== null}
-              className="w-full rounded-xl bg-[#E8F5F1] py-3 font-semibold text-[#1A362D] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loadingAction === "confirm"
-                ? "Confirming..."
-                : "Confirm Completion"}
-            </button>
+          <button
+            type="button"
+            onClick={handleConfirmCompletion}
+            disabled={loadingAction !== null}
+            className="w-full rounded-xl bg-[#E8F5F1] py-3 font-semibold text-[#1A362D] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loadingAction === "confirm"
+              ? "Confirming..."
+              : "Confirm Completion"}
+          </button>
+        )}
 
-            <button
-              type="button"
-              disabled
-              className="w-full rounded-xl border border-gray-200 py-3 font-semibold text-gray-700 opacity-60"
-            >
-              Leave Review (Coming Soon)
-            </button>
+        {status === "CONFIRMED" && (
+          <>
+            {checkingReview ? (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-500">
+                Loading review...
+              </div>
+            ) : reviewExists ? (
+              <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                <h4 className="font-semibold text-green-800">
+                  Review Submitted
+                </h4>
+
+                <p className="mt-1 text-sm text-green-700">
+                  Thank you for sharing your experience with this worker.
+                </p>
+              </div>
+            ) : (
+              <LeaveReviewCard
+                requestId={requestId}
+                workerId={workerId}
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            )}
           </>
         )}
 
-        {(status === "CONFIRMED" ||
-          status === "DECLINED" ||
-          status === "CANCELLED") && (
+        {(status === "DECLINED" || status === "CANCELLED") && (
           <button
             type="button"
             disabled

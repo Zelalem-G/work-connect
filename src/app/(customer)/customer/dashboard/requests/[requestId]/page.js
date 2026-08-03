@@ -12,6 +12,7 @@ import RequestTimeline from "@/features/customer-requests/RequestTimeline";
 import WorkerSummarySidebar from "@/features/customer-requests/WorkerSummarySidebar";
 import RequestActions from "@/features/customer-requests/RequestActions";
 import { getCustomerRequestDetails } from "@/services/request.service";
+import { getReviewByRequest } from "@/services/review.service"; // NEW
 
 function normalizeStatus(status) {
   switch (status) {
@@ -58,13 +59,19 @@ export default function RequestDetailsPage() {
   const requestId = params?.requestId;
 
   const [details, setDetails] = useState(null);
+  const [review, setReview] = useState(null); // NEW
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   async function handleRequestUpdated() {
     try {
       const data = await getCustomerRequestDetails(requestId);
+
       setDetails(data);
+
+      // NEW
+      const existingReview = await getReviewByRequest(requestId);
+      setReview(existingReview);
     } catch {
       // Keep current state if refresh fails.
     }
@@ -82,10 +89,15 @@ export default function RequestDetailsPage() {
         setLoading(true);
         setError("");
 
-        const data = await getCustomerRequestDetails(requestId);
+        // NEW
+        const [data, existingReview] = await Promise.all([
+          getCustomerRequestDetails(requestId),
+          getReviewByRequest(requestId),
+        ]);
 
         if (mounted) {
           setDetails(data);
+          setReview(existingReview);
         }
       } catch (err) {
         if (mounted) {
@@ -238,6 +250,7 @@ export default function RequestDetailsPage() {
 
           <RequestActions
             requestId={request.id}
+            workerId={worker.id}
             status={request.status}
             onRequestUpdated={handleRequestUpdated}
           />
