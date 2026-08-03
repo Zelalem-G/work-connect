@@ -31,6 +31,7 @@ export default function NewRequestsSection({ requests }) {
             .map((request) => (
               <WorkerRequestCard
                 key={request.id}
+                id={request.id}
                 name={request.customer}
                 location={request.location}
                 avatar={request.avatar}
