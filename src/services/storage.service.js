@@ -6,6 +6,7 @@ import { workerProfiles } from "@/mock/data/workerProfiles";
 import { requests } from "@/mock/data/requests";
 import { portfolio } from "@/mock/data/portfolio";
 import { reviews } from "@/mock/data/reviews";
+import { favorites } from "@/mock/data/favorites";
 
 const STORAGE_KEY = "workconnect-db";
 
@@ -16,6 +17,7 @@ const INITIAL_DATABASE = {
   requests,
   portfolio,
   reviews,
+  favorites,
 };
 
 /**

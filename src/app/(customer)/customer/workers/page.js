@@ -5,14 +5,17 @@ import Link from "next/link";
 
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
+
+import { getWorkers } from "@/services/worker.service";
+
 import {
-  getWorkers,
-  searchWorkers,
-  getWorkersByProfession,
-} from "@/services/worker.service";
+  getCurrentCustomerFavorites,
+  toggleFavorite,
+} from "@/services/favorite.service";
 
 const categories = [
   "All",
+  "Favorites",
   "Electrician",
   "Plumber",
   "Carpenter",
@@ -23,23 +26,34 @@ const categories = [
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadWorkers() {
+    async function loadData() {
       try {
         setLoading(true);
         setError("");
-        const data = await getWorkers();
 
-        if (mounted) {
-          setWorkers(data);
+        const [workerData, favorites] = await Promise.all([
+          getWorkers(),
+          getCurrentCustomerFavorites(),
+        ]);
+
+        if (!mounted) {
+          return;
         }
+
+        setWorkers(workerData);
+
+        setFavoriteIds(new Set(favorites.map((favorite) => favorite.workerId)));
       } catch (err) {
         if (mounted) {
           setError(err.message || "Unable to load workers right now.");
@@ -51,54 +65,60 @@ export default function WorkersPage() {
       }
     }
 
-    loadWorkers();
+    loadData();
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
+  async function handleFavoriteToggle(workerId) {
+    try {
+      const favorited = await toggleFavorite(workerId);
 
-    async function reloadWorkers() {
-      try {
-        setLoading(true);
-        setError("");
+      setFavoriteIds((current) => {
+        const next = new Set(current);
 
-        let data = [];
-
-        if (search.trim()) {
-          data = await searchWorkers(search);
-        } else if (selectedCategory !== "All") {
-          data = await getWorkersByProfession(selectedCategory);
+        if (favorited) {
+          next.add(workerId);
         } else {
-          data = await getWorkers();
+          next.delete(workerId);
         }
 
-        if (mounted) {
-          setWorkers(data);
-        }
-      } catch (err) {
-        if (mounted) {
-          setError(err.message || "Unable to filter workers right now.");
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
+        return next;
+      });
+    } catch (err) {
+      console.error(err);
     }
-
-    reloadWorkers();
-
-    return () => {
-      mounted = false;
-    };
-  }, [search, selectedCategory]);
+  }
 
   const displayedWorkers = useMemo(() => {
-    return (workers || []).map((worker) => ({
+    let filtered = [...workers];
+
+    const query = search.trim().toLowerCase();
+
+    if (query) {
+      filtered = filtered.filter((worker) => {
+        return (
+          worker.fullName?.toLowerCase().includes(query) ||
+          worker.primarySkill?.toLowerCase().includes(query) ||
+          worker.city?.toLowerCase().includes(query) ||
+          worker.skills?.some((skill) => skill.toLowerCase().includes(query))
+        );
+      });
+    }
+
+    if (selectedCategory !== "All" && selectedCategory !== "Favorites") {
+      filtered = filtered.filter(
+        (worker) => worker.primarySkill === selectedCategory,
+      );
+    }
+
+    if (selectedCategory === "Favorites") {
+      filtered = filtered.filter((worker) => favoriteIds.has(worker.id));
+    }
+
+    return filtered.map((worker) => ({
       id: worker.id,
       name: worker.fullName,
       skill: worker.primarySkill,
@@ -106,9 +126,9 @@ export default function WorkersPage() {
       rating: worker.rating || 0,
       verified: worker.verified,
       image: worker.profileImage || "/api/placeholder/150/150",
+      favorite: favoriteIds.has(worker.id),
     }));
-  }, [workers]);
-
+  }, [workers, search, selectedCategory, favoriteIds]);
   return (
     <div className="space-y-8">
       <section>
@@ -179,7 +199,9 @@ export default function WorkersPage() {
           </Card>
         ) : displayedWorkers.length === 0 ? (
           <Card className="col-span-full rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-            No workers match your search yet.
+            {selectedCategory === "Favorites"
+              ? "You haven't added any favorite workers yet."
+              : "No workers match your search yet."}
           </Card>
         ) : (
           displayedWorkers.map((worker) => (
@@ -200,11 +222,26 @@ export default function WorkersPage() {
                   </div>
                 </div>
 
-                {worker.verified && (
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                    Verified
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {worker.verified && (
+                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                      Verified
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => handleFavoriteToggle(worker.id)}
+                    className="text-2xl leading-none transition hover:scale-110"
+                    aria-label={
+                      worker.favorite
+                        ? "Remove from favorites"
+                        : "Add to favorites"
+                    }
+                  >
+                    {worker.favorite ? "❤️" : "🤍"}
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6 flex items-center justify-between">

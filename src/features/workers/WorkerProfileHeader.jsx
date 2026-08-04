@@ -1,6 +1,6 @@
 import { Avatar } from "@/components/avatar";
 
-export default function WorkerProfileHeader({ worker }) {
+export default function WorkerProfileHeader({ worker, onFavoriteToggle }) {
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-6 md:flex-row md:justify-between">
@@ -40,7 +40,7 @@ export default function WorkerProfileHeader({ worker }) {
             <div className="flex items-center gap-2 text-sm">
               <span className="text-yellow-500">★</span>
 
-              <span className="font-medium">{worker.rating}</span>
+              <span className="font-medium">{worker.rating.toFixed(1)}</span>
 
               <span className="text-gray-500">
                 ({worker.reviewCount} reviews)
@@ -106,17 +106,28 @@ export default function WorkerProfileHeader({ worker }) {
 
           {/* Favourite */}
 
-          <button className="rounded-xl border border-gray-200 p-3 transition hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={() => onFavoriteToggle(worker.id)}
+            aria-label={
+              worker.favorite ? "Remove from favorites" : "Add to favorites"
+            }
+            className={`rounded-xl border p-3 transition ${
+              worker.favorite
+                ? "border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50"
+            }`}
+          >
             <svg
-              className="h-5 w-5 text-gray-500"
-              fill="none"
+              className="h-5 w-5"
               viewBox="0 0 24 24"
+              fill={worker.favorite ? "currentColor" : "none"}
               stroke="currentColor"
+              strokeWidth={2}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
